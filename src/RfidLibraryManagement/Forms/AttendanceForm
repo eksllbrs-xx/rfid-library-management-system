@@ -1,0 +1,820 @@
+using System;
+using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using RfidLibraryManagement.Data;
+
+namespace RfidLibraryManagement.Forms
+{
+    public class AttendanceForm : Form
+    {
+        private readonly string borrowerId;
+
+        private Label dateLabel = null!;
+        private Label timeInLabel = null!;
+        private Label timeOutLabel = null!;
+
+        private Button timeInButton = null!;
+        private Button timeOutButton = null!;
+        private Button refreshButton = null!;
+        private Button closeButton = null!;
+
+        private DataGridView attendanceGrid = null!;
+
+        public AttendanceForm(string borrowerId)
+        {
+            this.borrowerId = borrowerId;
+
+            InitializeForm();
+            LoadTodayAttendance();
+            LoadAttendanceHistory();
+        }
+
+        private void InitializeForm()
+        {
+            Text = "Library Attendance";
+
+            StartPosition =
+                FormStartPosition.CenterScreen;
+
+            Size =
+                new Size(950, 650);
+
+            MinimumSize =
+                new Size(800, 550);
+
+            // =====================================================
+            // TITLE
+            // =====================================================
+
+            Label titleLabel = new Label
+            {
+                Text = "LIBRARY ATTENDANCE",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+
+                Location =
+                    new Point(330, 25)
+            };
+
+            // =====================================================
+            // BORROWER ID
+            // =====================================================
+
+            Label borrowerLabel = new Label
+            {
+                Text =
+                    $"Borrower ID: {borrowerId}",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(30, 80)
+            };
+
+            // =====================================================
+            // DATE
+            // =====================================================
+
+            dateLabel = new Label
+            {
+                Text =
+                    $"Date: {DateTime.Today:yyyy-MM-dd}",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold),
+
+                Location =
+                    new Point(30, 115)
+            };
+
+            // =====================================================
+            // TIME IN
+            // =====================================================
+
+            timeInLabel = new Label
+            {
+                Text = "Time In: --",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(220, 115)
+            };
+
+            // =====================================================
+            // TIME OUT
+            // =====================================================
+
+            timeOutLabel = new Label
+            {
+                Text = "Time Out: --",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(410, 115)
+            };
+
+            // =====================================================
+            // TIME IN BUTTON
+            // =====================================================
+
+            timeInButton = new Button
+            {
+                Text = "TIME IN",
+
+                Location =
+                    new Point(620, 100),
+
+                Size =
+                    new Size(120, 40),
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            timeInButton.Click +=
+                TimeInButton_Click;
+
+            // =====================================================
+            // TIME OUT BUTTON
+            // =====================================================
+
+            timeOutButton = new Button
+            {
+                Text = "TIME OUT",
+
+                Location =
+                    new Point(760, 100),
+
+                Size =
+                    new Size(120, 40),
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            timeOutButton.Click +=
+                TimeOutButton_Click;
+
+            // =====================================================
+            // ATTENDANCE HISTORY LABEL
+            // =====================================================
+
+            Label historyLabel = new Label
+            {
+                Text = "ATTENDANCE HISTORY",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    12,
+                    FontStyle.Bold),
+
+                Location =
+                    new Point(30, 165)
+            };
+
+            // =====================================================
+            // ATTENDANCE GRID
+            // =====================================================
+
+            attendanceGrid = new DataGridView
+            {
+                Location =
+                    new Point(30, 200),
+
+                Size =
+                    new Size(850, 330),
+
+                Anchor =
+                    AnchorStyles.Top |
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left |
+                    AnchorStyles.Right,
+
+                AllowUserToAddRows = false,
+
+                AllowUserToDeleteRows = false,
+
+                ReadOnly = true,
+
+                SelectionMode =
+                    DataGridViewSelectionMode.FullRowSelect,
+
+                MultiSelect = false,
+
+                AutoGenerateColumns = true,
+
+                AutoSizeColumnsMode =
+                    DataGridViewAutoSizeColumnsMode.DisplayedCells
+            };
+
+            // =====================================================
+            // REFRESH BUTTON
+            // =====================================================
+
+            refreshButton = new Button
+            {
+                Text = "REFRESH",
+
+                Location =
+                    new Point(30, 550),
+
+                Size =
+                    new Size(120, 40),
+
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            refreshButton.Click +=
+                RefreshButton_Click;
+
+            // =====================================================
+            // CLOSE BUTTON
+            // =====================================================
+
+            closeButton = new Button
+            {
+                Text = "CLOSE",
+
+                Location =
+                    new Point(760, 550),
+
+                Size =
+                    new Size(120, 40),
+
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Right,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            closeButton.Click +=
+                CloseButton_Click;
+
+            // =====================================================
+            // ADD CONTROLS
+            // =====================================================
+
+            Controls.Add(titleLabel);
+            Controls.Add(borrowerLabel);
+            Controls.Add(dateLabel);
+            Controls.Add(timeInLabel);
+            Controls.Add(timeOutLabel);
+
+            Controls.Add(timeInButton);
+            Controls.Add(timeOutButton);
+
+            Controls.Add(historyLabel);
+            Controls.Add(attendanceGrid);
+
+            Controls.Add(refreshButton);
+            Controls.Add(closeButton);
+        }
+
+        // =========================================================
+        // TIME IN
+        // =========================================================
+
+        private void TimeInButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+                // Find the internal user ID.
+                int userId = GetUserId(connection);
+
+                if (userId <= 0)
+                {
+                    return;
+                }
+
+                // Check if the user already timed in today.
+                string checkQuery = @"
+                    SELECT attendance_id
+                    FROM attendance
+                    WHERE user_id = @userId
+                      AND attendance_date = CURRENT_DATE
+                    LIMIT 1;";
+
+                using MySqlCommand checkCommand =
+                    new MySqlCommand(
+                        checkQuery,
+                        connection);
+
+                checkCommand.Parameters.AddWithValue(
+                    "@userId",
+                    userId);
+
+                object? existingRecord =
+                    checkCommand.ExecuteScalar();
+
+                if (existingRecord != null)
+                {
+                    MessageBox.Show(
+                        "You already have an attendance record for today.",
+                        "Time In",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    LoadTodayAttendance();
+                    return;
+                }
+
+                // Create today's attendance record.
+                string insertQuery = @"
+                    INSERT INTO attendance
+                    (
+                        user_id,
+                        attendance_date,
+                        time_in,
+                        purpose
+                    )
+                    VALUES
+                    (
+                        @userId,
+                        CURRENT_DATE,
+                        CURRENT_TIME,
+                        @purpose
+                    );";
+
+                using MySqlCommand insertCommand =
+                    new MySqlCommand(
+                        insertQuery,
+                        connection);
+
+                insertCommand.Parameters.AddWithValue(
+                    "@userId",
+                    userId);
+
+                insertCommand.Parameters.AddWithValue(
+                    "@purpose",
+                    "Library Visit");
+
+                insertCommand.ExecuteNonQuery();
+
+                MessageBox.Show(
+                    $"Time In recorded successfully.\n\n" +
+                    $"Time: {DateTime.Now:hh:mm:ss tt}",
+                    "Attendance",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                LoadTodayAttendance();
+                LoadAttendanceHistory();
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Unable to record Time In.\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred.\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        // TIME OUT
+        // =========================================================
+
+        private void TimeOutButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+                int userId = GetUserId(connection);
+
+                if (userId <= 0)
+                {
+                    return;
+                }
+
+                // Check today's attendance record.
+                string checkQuery = @"
+                    SELECT
+                        attendance_id,
+                        time_out
+                    FROM attendance
+                    WHERE user_id = @userId
+                      AND attendance_date = CURRENT_DATE
+                    LIMIT 1;";
+
+                int attendanceId = 0;
+                bool alreadyTimedOut = false;
+
+                using (
+                    MySqlCommand checkCommand =
+                        new MySqlCommand(
+                            checkQuery,
+                            connection))
+                {
+                    checkCommand.Parameters.AddWithValue(
+                        "@userId",
+                        userId);
+
+                    using MySqlDataReader reader =
+                        checkCommand.ExecuteReader();
+
+                    if (!reader.Read())
+                    {
+                        MessageBox.Show(
+                            "You have not recorded Time In today.",
+                            "Time Out",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+
+                        return;
+                    }
+
+                    attendanceId =
+                        Convert.ToInt32(
+                            reader["attendance_id"]);
+
+                    alreadyTimedOut =
+                        reader["time_out"] != DBNull.Value;
+                }
+
+                if (alreadyTimedOut)
+                {
+                    MessageBox.Show(
+                        "You have already recorded Time Out for today.",
+                        "Time Out",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    LoadTodayAttendance();
+                    return;
+                }
+
+                // Update Time Out.
+                string updateQuery = @"
+                    UPDATE attendance
+                    SET time_out = CURRENT_TIME
+                    WHERE attendance_id = @attendanceId;";
+
+                using MySqlCommand updateCommand =
+                    new MySqlCommand(
+                        updateQuery,
+                        connection);
+
+                updateCommand.Parameters.AddWithValue(
+                    "@attendanceId",
+                    attendanceId);
+
+                updateCommand.ExecuteNonQuery();
+
+                MessageBox.Show(
+                    $"Time Out recorded successfully.\n\n" +
+                    $"Time: {DateTime.Now:hh:mm:ss tt}",
+                    "Attendance",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                LoadTodayAttendance();
+                LoadAttendanceHistory();
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Unable to record Time Out.\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred.\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        // GET USER ID
+        // =========================================================
+
+        private int GetUserId(
+            MySqlConnection connection)
+        {
+            string query = @"
+                SELECT user_id
+                FROM library_users
+                WHERE student_faculty_id =
+                    @borrowerId
+                LIMIT 1;";
+
+            using MySqlCommand command =
+                new MySqlCommand(
+                    query,
+                    connection);
+
+            command.Parameters.AddWithValue(
+                "@borrowerId",
+                borrowerId);
+
+            object? result =
+                command.ExecuteScalar();
+
+            if (result == null)
+            {
+                MessageBox.Show(
+                    "The current user could not be found.",
+                    "User Not Found",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return 0;
+            }
+
+            return Convert.ToInt32(result);
+        }
+
+        // =========================================================
+        // LOAD TODAY'S ATTENDANCE
+        // =========================================================
+
+        private void LoadTodayAttendance()
+        {
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+                int userId =
+                    GetUserId(connection);
+
+                if (userId <= 0)
+                {
+                    return;
+                }
+
+                string query = @"
+                    SELECT
+                        attendance_date,
+                        time_in,
+                        time_out,
+                        purpose
+                    FROM attendance
+                    WHERE user_id = @userId
+                      AND attendance_date = CURRENT_DATE
+                    LIMIT 1;";
+
+                using MySqlCommand command =
+                    new MySqlCommand(
+                        query,
+                        connection);
+
+                command.Parameters.AddWithValue(
+                    "@userId",
+                    userId);
+
+                using MySqlDataReader reader =
+                    command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    string timeIn =
+                        reader["time_in"] == DBNull.Value
+                            ? "--"
+                            : Convert.ToDateTime(
+                                reader["time_in"])
+                                .ToString("hh:mm:ss tt");
+
+                    string timeOut =
+                        reader["time_out"] == DBNull.Value
+                            ? "--"
+                            : Convert.ToDateTime(
+                                reader["time_out"])
+                                .ToString("hh:mm:ss tt");
+
+                    timeInLabel.Text =
+                        $"Time In: {timeIn}";
+
+                    timeOutLabel.Text =
+                        $"Time Out: {timeOut}";
+
+                    timeInButton.Enabled = false;
+
+                    timeOutButton.Enabled =
+                        reader["time_out"] == DBNull.Value;
+                }
+                else
+                {
+                    timeInLabel.Text =
+                        "Time In: --";
+
+                    timeOutLabel.Text =
+                        "Time Out: --";
+
+                    timeInButton.Enabled = true;
+                    timeOutButton.Enabled = false;
+                }
+            }
+            catch
+            {
+                // The main attendance history/error
+                // handling is performed elsewhere.
+            }
+        }
+
+        // =========================================================
+        // LOAD ATTENDANCE HISTORY
+        // =========================================================
+
+        private void LoadAttendanceHistory()
+        {
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+                int userId =
+                    GetUserId(connection);
+
+                if (userId <= 0)
+                {
+                    return;
+                }
+
+                string query = @"
+                    SELECT
+                        attendance_date,
+                        time_in,
+                        time_out,
+                        purpose
+                    FROM attendance
+                    WHERE user_id = @userId
+                    ORDER BY
+                        attendance_date DESC,
+                        time_in DESC;";
+
+                DataTable table =
+                    new DataTable();
+
+                using MySqlCommand command =
+                    new MySqlCommand(
+                        query,
+                        connection);
+
+                command.Parameters.AddWithValue(
+                    "@userId",
+                    userId);
+
+                using MySqlDataAdapter adapter =
+                    new MySqlDataAdapter(command);
+
+                adapter.Fill(table);
+
+                attendanceGrid.DataSource =
+                    table;
+
+                FormatGrid();
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Unable to load attendance history.\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to load attendance history.\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        // FORMAT GRID
+        // =========================================================
+
+        private void FormatGrid()
+        {
+            if (attendanceGrid.Columns.Contains(
+                "attendance_date"))
+            {
+                attendanceGrid.Columns[
+                    "attendance_date"
+                ].DefaultCellStyle.Format =
+                    "yyyy-MM-dd";
+            }
+
+            if (attendanceGrid.Columns.Contains(
+                "time_in"))
+            {
+                attendanceGrid.Columns[
+                    "time_in"
+                ].DefaultCellStyle.Format =
+                    "hh:mm:ss tt";
+            }
+
+            if (attendanceGrid.Columns.Contains(
+                "time_out"))
+            {
+                attendanceGrid.Columns[
+                    "time_out"
+                ].DefaultCellStyle.Format =
+                    "hh:mm:ss tt";
+            }
+        }
+
+        // =========================================================
+        // REFRESH
+        // =========================================================
+
+        private void RefreshButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            LoadTodayAttendance();
+            LoadAttendanceHistory();
+        }
+
+        // =========================================================
+        // CLOSE
+        // =========================================================
+
+        private void CloseButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            Close();
+        }
+    }
+}
