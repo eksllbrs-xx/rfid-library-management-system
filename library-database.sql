@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
 );
 
 -- ============================================================
--- 2. LIBRARY USERS
+-- 2. LIBRARY USER
 -- Students and Faculty
 -- ============================================================
 
