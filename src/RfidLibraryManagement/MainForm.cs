@@ -85,13 +85,11 @@ namespace RfidLibraryManagement
 }
 
         private void RfidButton_Click(object? sender, EventArgs e)
-        {
-            MessageBox.Show(
-                "RFID user login will be implemented next.",
-                "RFID Login",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-        }
+{
+    using RfidLoginForm loginForm = new RfidLoginForm();
+
+    loginForm.ShowDialog();
+}
 
         private void ExitButton_Click(object? sender, EventArgs e)
         {
