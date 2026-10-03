@@ -1,4 +1,3 @@
-using RfidLibraryManagement.Forms;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -111,12 +110,17 @@ namespace RfidLibraryManagement.Forms
 
             try
             {
-                using MySqlConnection connection = Database.GetConnection();
+                using MySqlConnection connection =
+                    Database.GetConnection();
 
                 connection.Open();
 
                 string query = @"
-                    SELECT admin_id, username, full_name, role
+                    SELECT
+                        admin_id,
+                        username,
+                        full_name,
+                        role
                     FROM admin_users
                     WHERE username = @username
                     AND password_hash = @password
@@ -126,15 +130,24 @@ namespace RfidLibraryManagement.Forms
                 using MySqlCommand command =
                     new MySqlCommand(query, connection);
 
-                command.Parameters.AddWithValue("@username", username);
-                command.Parameters.AddWithValue("@password", password);
+                command.Parameters.AddWithValue(
+                    "@username",
+                    username);
 
-                using MySqlDataReader reader = command.ExecuteReader();
+                command.Parameters.AddWithValue(
+                    "@password",
+                    password);
+
+                using MySqlDataReader reader =
+                    command.ExecuteReader();
 
                 if (reader.Read())
                 {
-                    string fullName = reader["full_name"].ToString() ?? "";
-                    string role = reader["role"].ToString() ?? "";
+                    string fullName =
+                        reader["full_name"].ToString() ?? "";
+
+                    string role =
+                        reader["role"].ToString() ?? "";
 
                     MessageBox.Show(
                         $"Welcome, {fullName}!\nRole: {role}",
@@ -142,16 +155,14 @@ namespace RfidLibraryManagement.Forms
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
 
-                   Hide();
+                    Hide();
 
-using AdminDashboardForm dashboard =
-    new AdminDashboardForm();
+                    using AdminDashboardForm dashboard =
+                        new AdminDashboardForm();
 
-dashboard.ShowDialog();
+                    dashboard.ShowDialog();
 
-Close();
-
-                    
+                    Close();
                 }
                 else
                 {
@@ -160,21 +171,35 @@ Close();
                         "Login Failed",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
+
+                    passwordTextBox.Clear();
+                    passwordTextBox.Focus();
                 }
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 MessageBox.Show(
                     "Unable to connect to the database.\n\n" +
-                    "Please check your MySQL configuration.\n\n" +
+                    "Please check your MySQL server and database configuration.\n\n" +
                     $"Details: {ex.Message}",
                     "Database Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred.\n\n" +
+                    $"Details: {ex.Message}",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
-        private void CancelButton_Click(object? sender, EventArgs e)
+        private void CancelButton_Click(
+            object? sender,
+            EventArgs e)
         {
             Close();
         }
