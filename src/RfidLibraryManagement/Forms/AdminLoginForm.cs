@@ -1,207 +1,313 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using MySql.Data.MySqlClient;
-using RfidLibraryManagement.Data;
 
 namespace RfidLibraryManagement.Forms
 {
-    public class AdminLoginForm : Form
+    public class AdminDashboardForm : Form
     {
-        private TextBox usernameTextBox;
-        private TextBox passwordTextBox;
-        private Button loginButton;
-        private Button cancelButton;
+        private Button bookManagementButton = null!;
+        private Button issueBookButton = null!;
+        private Button returnBookButton = null!;
+        private Button recordsButton = null!;
+        private Button searchButton = null!;
+        private Button reportsButton = null!;
+        private Button logoutButton = null!;
 
-        public AdminLoginForm()
+        public AdminDashboardForm()
         {
             InitializeForm();
         }
 
         private void InitializeForm()
         {
-            Text = "Admin / Library Staff Login";
+            Text = "Admin Dashboard - RFID Library Management System";
             StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(500, 350);
+            Size = new Size(750, 600);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
 
+            // =========================
+            // TITLE
+            // =========================
+
             Label titleLabel = new Label
             {
-                Text = "ADMIN / LIBRARY STAFF LOGIN",
+                Text = "RFID LIBRARY MANAGEMENT SYSTEM",
                 AutoSize = true,
-                Font = new Font("Segoe UI", 18, FontStyle.Bold),
-                Location = new Point(105, 40)
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+                Location = new Point(145, 35)
             };
 
-            Label usernameLabel = new Label
+            Label subtitleLabel = new Label
             {
-                Text = "Username:",
+                Text = "ADMIN / LIBRARY STAFF DASHBOARD",
                 AutoSize = true,
-                Location = new Point(70, 115),
-                Font = new Font("Segoe UI", 11)
+                Font = new Font(
+                    "Segoe UI",
+                    12,
+                    FontStyle.Regular),
+                Location = new Point(250, 80)
             };
 
-            usernameTextBox = new TextBox
+            // =========================
+            // BOOK MANAGEMENT
+            // =========================
+
+            bookManagementButton = new Button
             {
-                Location = new Point(180, 110),
-                Width = 240,
-                Font = new Font("Segoe UI", 11)
+                Text = "BOOK MANAGEMENT",
+                Location = new Point(80, 140),
+                Size = new Size(250, 55),
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
             };
 
-            Label passwordLabel = new Label
+            bookManagementButton.Click +=
+                BookManagementButton_Click;
+
+            // =========================
+            // ISSUE BOOK
+            // =========================
+
+            issueBookButton = new Button
             {
-                Text = "Password:",
-                AutoSize = true,
-                Location = new Point(70, 165),
-                Font = new Font("Segoe UI", 11)
+                Text = "ISSUE BOOK",
+                Location = new Point(370, 140),
+                Size = new Size(250, 55),
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
             };
 
-            passwordTextBox = new TextBox
+            issueBookButton.Click +=
+                IssueBookButton_Click;
+
+            // =========================
+            // RETURN BOOK
+            // =========================
+
+            returnBookButton = new Button
             {
-                Location = new Point(180, 160),
-                Width = 240,
-                Font = new Font("Segoe UI", 11),
-                UseSystemPasswordChar = true
+                Text = "RETURN BOOK",
+                Location = new Point(80, 215),
+                Size = new Size(250, 55),
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
             };
 
-            loginButton = new Button
+            returnBookButton.Click +=
+                ReturnBookButton_Click;
+
+            // =========================
+            // RECORDS
+            // =========================
+
+            recordsButton = new Button
             {
-                Text = "LOGIN",
-                Location = new Point(180, 220),
-                Size = new Size(110, 40)
+                Text = "RECORDS",
+                Location = new Point(370, 215),
+                Size = new Size(250, 55),
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
             };
 
-            cancelButton = new Button
+            recordsButton.Click +=
+                RecordsButton_Click;
+
+            // =========================
+            // SEARCH
+            // =========================
+
+            searchButton = new Button
             {
-                Text = "CANCEL",
-                Location = new Point(310, 220),
-                Size = new Size(110, 40)
+                Text = "SEARCH",
+                Location = new Point(80, 290),
+                Size = new Size(250, 55),
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
             };
 
-            loginButton.Click += LoginButton_Click;
-            cancelButton.Click += CancelButton_Click;
+            searchButton.Click +=
+                SearchButton_Click;
+
+            // =========================
+            // REPORTS / PRINT PREVIEW
+            // =========================
+
+            reportsButton = new Button
+            {
+                Text = "REPORTS / PRINT PREVIEW",
+                Location = new Point(370, 290),
+                Size = new Size(250, 55),
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
+            };
+
+            reportsButton.Click +=
+                ReportsButton_Click;
+
+            // =========================
+            // LOGOUT
+            // =========================
+
+            logoutButton = new Button
+            {
+                Text = "LOGOUT",
+                Location = new Point(275, 400),
+                Size = new Size(200, 50),
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
+            };
+
+            logoutButton.Click +=
+                LogoutButton_Click;
+
+            // =========================
+            // ADD CONTROLS
+            // =========================
 
             Controls.Add(titleLabel);
-            Controls.Add(usernameLabel);
-            Controls.Add(usernameTextBox);
-            Controls.Add(passwordLabel);
-            Controls.Add(passwordTextBox);
-            Controls.Add(loginButton);
-            Controls.Add(cancelButton);
+            Controls.Add(subtitleLabel);
+
+            Controls.Add(bookManagementButton);
+            Controls.Add(issueBookButton);
+            Controls.Add(returnBookButton);
+            Controls.Add(recordsButton);
+            Controls.Add(searchButton);
+            Controls.Add(reportsButton);
+
+            Controls.Add(logoutButton);
         }
 
-        private void LoginButton_Click(object? sender, EventArgs e)
-        {
-            string username = usernameTextBox.Text.Trim();
-            string password = passwordTextBox.Text;
+        // =====================================================
+        // BOOK MANAGEMENT
+        // =====================================================
 
-            if (string.IsNullOrWhiteSpace(username) ||
-                string.IsNullOrWhiteSpace(password))
-            {
-                MessageBox.Show(
-                    "Please enter your username and password.",
-                    "Login Required",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-
-                return;
-            }
-
-            try
-            {
-                using MySqlConnection connection =
-                    Database.GetConnection();
-
-                connection.Open();
-
-                string query = @"
-                    SELECT
-                        admin_id,
-                        username,
-                        full_name,
-                        role
-                    FROM admin_users
-                    WHERE username = @username
-                    AND password_hash = @password
-                    AND is_active = TRUE
-                    LIMIT 1;";
-
-                using MySqlCommand command =
-                    new MySqlCommand(query, connection);
-
-                command.Parameters.AddWithValue(
-                    "@username",
-                    username);
-
-                command.Parameters.AddWithValue(
-                    "@password",
-                    password);
-
-                using MySqlDataReader reader =
-                    command.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    string fullName =
-                        reader["full_name"].ToString() ?? "";
-
-                    string role =
-                        reader["role"].ToString() ?? "";
-
-                    MessageBox.Show(
-                        $"Welcome, {fullName}!\nRole: {role}",
-                        "Login Successful",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-
-                    Hide();
-
-                    using AdminDashboardForm dashboard =
-                        new AdminDashboardForm();
-
-                    dashboard.ShowDialog();
-
-                    Close();
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "Invalid username or password.",
-                        "Login Failed",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-
-                    passwordTextBox.Clear();
-                    passwordTextBox.Focus();
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show(
-                    "Unable to connect to the database.\n\n" +
-                    "Please check your MySQL server and database configuration.\n\n" +
-                    $"Details: {ex.Message}",
-                    "Database Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "An unexpected error occurred.\n\n" +
-                    $"Details: {ex.Message}",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-        }
-
-        private void CancelButton_Click(
+        private void BookManagementButton_Click(
             object? sender,
             EventArgs e)
         {
-            Close();
+            using BookManagementForm bookManagementForm =
+                new BookManagementForm();
+
+            bookManagementForm.ShowDialog();
+        }
+
+        // =====================================================
+        // ISSUE BOOK
+        // =====================================================
+
+        private void IssueBookButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            using IssueBookForm issueBookForm =
+                new IssueBookForm();
+
+            issueBookForm.ShowDialog();
+        }
+
+        // =====================================================
+        // RETURN BOOK
+        // =====================================================
+
+        private void ReturnBookButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            using ReturnBookForm returnBookForm =
+                new ReturnBookForm();
+
+            returnBookForm.ShowDialog();
+        }
+
+        // =====================================================
+        // RECORDS
+        // =====================================================
+
+        private void RecordsButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            MessageBox.Show(
+                "Records module will be implemented next.\n\n" +
+                "It will contain:\n" +
+                "• Attendance\n" +
+                "• Borrowed Books\n" +
+                "• Returned Books\n" +
+                "• Inventory\n" +
+                "• Book Requests",
+                "Records",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        // =====================================================
+        // SEARCH
+        // =====================================================
+
+        private void SearchButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            MessageBox.Show(
+                "Search module will be implemented next.",
+                "Search",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        // =====================================================
+        // REPORTS
+        // =====================================================
+
+        private void ReportsButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            MessageBox.Show(
+                "Reports / Print Preview module will be implemented next.\n\n" +
+                "The system will support PDF reports.",
+                "Reports / Print Preview",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        // =====================================================
+        // LOGOUT
+        // =====================================================
+
+        private void LogoutButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "Are you sure you want to logout?",
+                "Confirm Logout",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                Close();
+            }
         }
     }
 }
