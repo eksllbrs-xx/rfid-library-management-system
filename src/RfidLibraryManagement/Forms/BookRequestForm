@@ -1,0 +1,812 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using RfidLibraryManagement.Data;
+
+namespace RfidLibraryManagement.Forms
+{
+    public class BookRequestForm : Form
+    {
+        private readonly string borrowerId;
+        private readonly string borrowerName;
+
+        private TextBox bookTitleTextBox = null!;
+        private TextBox authorsTextBox = null!;
+        private TextBox copyrightTextBox = null!;
+        private NumericUpDown quantityNumeric = null!;
+        private TextBox subjectCourseTextBox = null!;
+        private ComboBox materialTypeComboBox = null!;
+        private TextBox availableAtTextBox = null!;
+        private TextBox reasonTextBox = null!;
+
+        private Button submitButton = null!;
+        private Button clearButton = null!;
+        private Button closeButton = null!;
+
+        public BookRequestForm(
+            string borrowerId,
+            string borrowerName)
+        {
+            this.borrowerId = borrowerId;
+            this.borrowerName = borrowerName;
+
+            InitializeForm();
+        }
+
+        private void InitializeForm()
+        {
+            Text = "Book Request";
+
+            StartPosition =
+                FormStartPosition.CenterScreen;
+
+            Size =
+                new Size(700, 680);
+
+            FormBorderStyle =
+                FormBorderStyle.FixedDialog;
+
+            MaximizeBox = false;
+
+            // =====================================================
+            // TITLE
+            // =====================================================
+
+            Label titleLabel = new Label
+            {
+                Text = "BOOK REQUISITION / REQUEST",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+
+                Location =
+                    new Point(165, 25)
+            };
+
+            // =====================================================
+            // REQUESTED BY
+            // =====================================================
+
+            Label requestedByLabel = new Label
+            {
+                Text = "Requested By:",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(45, 90)
+            };
+
+            TextBox requestedByTextBox = new TextBox
+            {
+                Text =
+                    $"{borrowerName} ({borrowerId})",
+
+                Location =
+                    new Point(190, 85),
+
+                Width = 430,
+
+                ReadOnly = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10)
+            };
+
+            // =====================================================
+            // BOOK TITLE
+            // =====================================================
+
+            Label bookTitleLabel = new Label
+            {
+                Text = "Book Title:",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(45, 135)
+            };
+
+            bookTitleTextBox = new TextBox
+            {
+                Location =
+                    new Point(190, 130),
+
+                Width = 430,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10)
+            };
+
+            // =====================================================
+            // AUTHORS
+            // =====================================================
+
+            Label authorsLabel = new Label
+            {
+                Text = "Author(s):",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(45, 180)
+            };
+
+            authorsTextBox = new TextBox
+            {
+                Location =
+                    new Point(190, 175),
+
+                Width = 430,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10)
+            };
+
+            // =====================================================
+            // COPYRIGHT
+            // =====================================================
+
+            Label copyrightLabel = new Label
+            {
+                Text = "Copyright:",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(45, 225)
+            };
+
+            copyrightTextBox = new TextBox
+            {
+                Location =
+                    new Point(190, 220),
+
+                Width = 180,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10)
+            };
+
+            // =====================================================
+            // QUANTITY
+            // =====================================================
+
+            Label quantityLabel = new Label
+            {
+                Text = "Quantity:",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(400, 225)
+            };
+
+            quantityNumeric = new NumericUpDown
+            {
+                Location =
+                    new Point(480, 220),
+
+                Width = 140,
+
+                Minimum = 1,
+
+                Maximum = 100,
+
+                Value = 1,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10)
+            };
+
+            // =====================================================
+            // SUBJECT / COURSE CODE
+            // =====================================================
+
+            Label subjectCourseLabel = new Label
+            {
+                Text = "Subject / Course Code:",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(45, 270)
+            };
+
+            subjectCourseTextBox = new TextBox
+            {
+                Location =
+                    new Point(190, 265),
+
+                Width = 430,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10)
+            };
+
+            // =====================================================
+            // MATERIAL TYPE
+            // =====================================================
+
+            Label materialTypeLabel = new Label
+            {
+                Text = "Type of Material:",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(45, 315)
+            };
+
+            materialTypeComboBox = new ComboBox
+            {
+                Location =
+                    new Point(190, 310),
+
+                Width = 430,
+
+                DropDownStyle =
+                    ComboBoxStyle.DropDownList,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10)
+            };
+
+            materialTypeComboBox.Items.AddRange(
+                new object[]
+                {
+                    "Book",
+                    "Textbook",
+                    "Reference Book",
+                    "E-Book",
+                    "Journal",
+                    "Magazine",
+                    "Thesis",
+                    "Research Material",
+                    "Other"
+                });
+
+            materialTypeComboBox.SelectedIndex = 0;
+
+            // =====================================================
+            // AVAILABLE AT
+            // =====================================================
+
+            Label availableAtLabel = new Label
+            {
+                Text = "Available At:",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(45, 360)
+            };
+
+            availableAtTextBox = new TextBox
+            {
+                Location =
+                    new Point(190, 355),
+
+                Width = 430,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                PlaceholderText =
+                    "Optional - website, bookstore, supplier, etc."
+            };
+
+            // =====================================================
+            // REASON
+            // =====================================================
+
+            Label reasonLabel = new Label
+            {
+                Text = "Reason:",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(45, 405)
+            };
+
+            reasonTextBox = new TextBox
+            {
+                Location =
+                    new Point(190, 400),
+
+                Width = 430,
+
+                Height = 90,
+
+                Multiline = true,
+
+                ScrollBars =
+                    ScrollBars.Vertical,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                PlaceholderText =
+                    "Enter the reason for requesting this material."
+            };
+
+            // =====================================================
+            // SUBMIT
+            // =====================================================
+
+            submitButton = new Button
+            {
+                Text = "SUBMIT REQUEST",
+
+                Location =
+                    new Point(190, 525),
+
+                Size =
+                    new Size(140, 40),
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            submitButton.Click +=
+                SubmitButton_Click;
+
+            // =====================================================
+            // CLEAR
+            // =====================================================
+
+            clearButton = new Button
+            {
+                Text = "CLEAR",
+
+                Location =
+                    new Point(345, 525),
+
+                Size =
+                    new Size(110, 40),
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            clearButton.Click +=
+                ClearButton_Click;
+
+            // =====================================================
+            // CLOSE
+            // =====================================================
+
+            closeButton = new Button
+            {
+                Text = "CLOSE",
+
+                Location =
+                    new Point(470, 525),
+
+                Size =
+                    new Size(110, 40),
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            closeButton.Click +=
+                CloseButton_Click;
+
+            // =====================================================
+            // ADD CONTROLS
+            // =====================================================
+
+            Controls.Add(titleLabel);
+
+            Controls.Add(requestedByLabel);
+            Controls.Add(requestedByTextBox);
+
+            Controls.Add(bookTitleLabel);
+            Controls.Add(bookTitleTextBox);
+
+            Controls.Add(authorsLabel);
+            Controls.Add(authorsTextBox);
+
+            Controls.Add(copyrightLabel);
+            Controls.Add(copyrightTextBox);
+
+            Controls.Add(quantityLabel);
+            Controls.Add(quantityNumeric);
+
+            Controls.Add(subjectCourseLabel);
+            Controls.Add(subjectCourseTextBox);
+
+            Controls.Add(materialTypeLabel);
+            Controls.Add(materialTypeComboBox);
+
+            Controls.Add(availableAtLabel);
+            Controls.Add(availableAtTextBox);
+
+            Controls.Add(reasonLabel);
+            Controls.Add(reasonTextBox);
+
+            Controls.Add(submitButton);
+            Controls.Add(clearButton);
+            Controls.Add(closeButton);
+        }
+
+        // =========================================================
+        // SUBMIT REQUEST
+        // =========================================================
+
+        private void SubmitButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            string bookTitle =
+                bookTitleTextBox.Text.Trim();
+
+            string authors =
+                authorsTextBox.Text.Trim();
+
+            string copyright =
+                copyrightTextBox.Text.Trim();
+
+            string subjectCourse =
+                subjectCourseTextBox.Text.Trim();
+
+            string materialType =
+                materialTypeComboBox.SelectedItem?
+                    .ToString() ?? "Book";
+
+            string availableAt =
+                availableAtTextBox.Text.Trim();
+
+            string reason =
+                reasonTextBox.Text.Trim();
+
+            int quantity =
+                Convert.ToInt32(
+                    quantityNumeric.Value);
+
+            // =====================================================
+            // VALIDATION
+            // =====================================================
+
+            if (string.IsNullOrWhiteSpace(bookTitle))
+            {
+                MessageBox.Show(
+                    "Please enter the book title.",
+                    "Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                bookTitleTextBox.Focus();
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(authors))
+            {
+                MessageBox.Show(
+                    "Please enter the author(s).",
+                    "Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                authorsTextBox.Focus();
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(
+                subjectCourse))
+            {
+                MessageBox.Show(
+                    "Please enter the subject or course code.",
+                    "Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                subjectCourseTextBox.Focus();
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                MessageBox.Show(
+                    "Please enter the reason for the request.",
+                    "Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                reasonTextBox.Focus();
+
+                return;
+            }
+
+            // =====================================================
+            // CONFIRM
+            // =====================================================
+
+            DialogResult confirmation =
+                MessageBox.Show(
+                    "Submit this book request?\n\n" +
+                    $"Book: {bookTitle}\n" +
+                    $"Author(s): {authors}\n" +
+                    $"Quantity: {quantity}\n" +
+                    $"Material Type: {materialType}",
+                    "Confirm Request",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+            if (confirmation != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+                // -------------------------------------------------
+                // Get the internal user_id from the RFID user's ID.
+                // -------------------------------------------------
+
+                string userQuery = @"
+                    SELECT user_id
+                    FROM library_users
+                    WHERE student_faculty_id =
+                        @borrowerId
+                    LIMIT 1;";
+
+                int userId;
+
+                using (
+                    MySqlCommand userCommand =
+                        new MySqlCommand(
+                            userQuery,
+                            connection))
+                {
+                    userCommand.Parameters.AddWithValue(
+                        "@borrowerId",
+                        borrowerId);
+
+                    object? result =
+                        userCommand.ExecuteScalar();
+
+                    if (result == null)
+                    {
+                        MessageBox.Show(
+                            "The current user could not be found.",
+                            "User Not Found",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+
+                        return;
+                    }
+
+                    userId =
+                        Convert.ToInt32(result);
+                }
+
+                // -------------------------------------------------
+                // Insert request.
+                // -------------------------------------------------
+
+                string requestQuery = @"
+                    INSERT INTO book_requests
+                    (
+                        requested_by,
+                        book_title,
+                        authors,
+                        copyright_year,
+                        quantity,
+                        subject_course_code,
+                        material_type,
+                        available_at,
+                        reason,
+                        request_date,
+                        status
+                    )
+                    VALUES
+                    (
+                        @requestedBy,
+                        @bookTitle,
+                        @authors,
+                        @copyrightYear,
+                        @quantity,
+                        @subjectCourse,
+                        @materialType,
+                        @availableAt,
+                        @reason,
+                        CURRENT_TIMESTAMP,
+                        'PENDING'
+                    );";
+
+                using MySqlCommand requestCommand =
+                    new MySqlCommand(
+                        requestQuery,
+                        connection);
+
+                requestCommand.Parameters.AddWithValue(
+                    "@requestedBy",
+                    userId);
+
+                requestCommand.Parameters.AddWithValue(
+                    "@bookTitle",
+                    bookTitle);
+
+                requestCommand.Parameters.AddWithValue(
+                    "@authors",
+                    authors);
+
+                // The database field is an integer.
+                if (int.TryParse(
+                    copyright,
+                    out int copyrightYear))
+                {
+                    requestCommand.Parameters.AddWithValue(
+                        "@copyrightYear",
+                        copyrightYear);
+                }
+                else
+                {
+                    requestCommand.Parameters.AddWithValue(
+                        "@copyrightYear",
+                        DBNull.Value);
+                }
+
+                requestCommand.Parameters.AddWithValue(
+                    "@quantity",
+                    quantity);
+
+                requestCommand.Parameters.AddWithValue(
+                    "@subjectCourse",
+                    subjectCourse);
+
+                requestCommand.Parameters.AddWithValue(
+                    "@materialType",
+                    materialType);
+
+                requestCommand.Parameters.AddWithValue(
+                    "@availableAt",
+                    string.IsNullOrWhiteSpace(
+                        availableAt)
+                        ? DBNull.Value
+                        : availableAt);
+
+                requestCommand.Parameters.AddWithValue(
+                    "@reason",
+                    reason);
+
+                requestCommand.ExecuteNonQuery();
+
+                MessageBox.Show(
+                    "Book request submitted successfully!\n\n" +
+                    "Status: PENDING",
+                    "Request Submitted",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                ClearFields();
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Database error while submitting the request.\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred.\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        // CLEAR
+        // =========================================================
+
+        private void ClearButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            ClearFields();
+        }
+
+        private void ClearFields()
+        {
+            bookTitleTextBox.Clear();
+            authorsTextBox.Clear();
+            copyrightTextBox.Clear();
+
+            quantityNumeric.Value = 1;
+
+            subjectCourseTextBox.Clear();
+
+            materialTypeComboBox.SelectedIndex =
+                0;
+
+            availableAtTextBox.Clear();
+            reasonTextBox.Clear();
+
+            bookTitleTextBox.Focus();
+        }
+
+        // =========================================================
+        // CLOSE
+        // =========================================================
+
+        private void CloseButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            Close();
+        }
+    }
+}
