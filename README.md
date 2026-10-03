@@ -2,172 +2,538 @@
 RFID-based Library Management System for managing library users, books, and transactions using C# and MySQL.
 
 
-#  RFID-Based Library Management System
+# RFID-Based Library Management System
 
-A database-driven **Library Management System with RFID integration**, designed to improve library operations through automated user identification, book management, and library transaction monitoring.
+A desktop-based **RFID Library Management System** developed to support library operations such as user identification, book management, book issuance and returns, attendance monitoring, inventory management, book requests, and library record management.
+
+The system uses **RFID technology** to assist in identifying registered users and maintaining library transactions and records in a centralized database.
+
+---
 
 ##  Project Overview
 
-The RFID-Based Library Management System was developed as a software solution for managing library resources and transactions.
+The RFID-Based Library Management System is designed to improve the efficiency of library operations by reducing manual record handling and providing a centralized system for managing library activities.
 
-The system integrates **Radio Frequency Identification (RFID)** technology to assist with user identification and library transactions while maintaining records in a centralized database.
+The system provides modules for:
 
-The project demonstrates the application of software development, database management, RFID technology, and software quality principles.
+- User identification
+- Book management
+- Book issuance
+- Book returns
+- Borrowed book monitoring
+- Returned book monitoring
+- Attendance records
+- Inventory records
+- Book requests
+- Search
+- Report and print preview
+
+The system also provides a reporting function that allows library records to be prepared for printing and exported as **PDF documents**.
+
+---
 
 ##  Objectives
 
-- Improve library transaction management
-- Reduce manual data entry
-- Provide RFID-based user identification
-- Maintain organized book and user records
-- Improve accessibility of transaction information
-- Generate useful library reports
-- Provide a centralized database for library records
+The system aims to:
 
-## Key Features
+- Automate common library transactions
+- Use RFID technology for user identification
+- Maintain organized library records
+- Manage books and inventory efficiently
+- Record borrowing and returning transactions
+- Monitor library user attendance
+- Manage book requests
+- Provide searchable library records
+- Generate printable reports
+- Reduce repetitive manual data entry
 
-### User Management
-- User registration
-- User information management
-- RFID identification
-- User record management
+---
+
+# Key Features
+
+##  RFID-Based User Identification
+
+The system uses RFID technology to identify registered library users.
+
+A registered RFID card or tag can be scanned to identify the user before performing library transactions.
+
+### RFID Workflow
+
+```text
+RFID Card / Tag
+       ↓
+RFID Reader
+       ↓
+RFID Identification
+       ↓
+Registered User
+       ↓
+Library Transaction
+```
+
 
 ###  Book Management
-- Add books
-- Update book information
-- Search books
-- Manage book records
-- Monitor book availability
 
-###  Library Transactions
-- Borrowing transactions
-- Returning transactions
-- Transaction history
-- User transaction monitoring
+The system provides functionality for managing library book information.
 
-###  RFID Integration
-- RFID card/tag identification
-- Automated user identification
-- RFID-assisted library transactions
+Book records may include:
 
-### Reports
-- Library transaction records
-- User records
-- Book records
-- Transaction history
+- Accession Number
+- Call Number
+- Book Title
+- Author
+- Category
+- Availability
+- Other bibliographic information
 
+---
 
-## Technology Stack
+###  Issue Book
+
+The **Issue Book** module is used to record books issued to library users.
+
+The system records information such as:
+
+- Student/User ID
+- Accession Number
+- Call Number
+- Book Title
+- Borrower's Name
+- Issued Date
+- Due Date
+
+#### Issuing Workflow
+
+```text
+Identify User
+      ↓
+Select / Identify Book
+      ↓
+Check Book Availability
+      ↓
+Record Transaction
+      ↓
+Set Due Date
+      ↓
+Update Library Records
+```
+
+---
+
+###  Return Book
+
+The **Return Book** module records books returned by library users.
+
+Returned-book records include:
+
+- Accession Number
+- Call Number
+- Book Title
+- Borrower's Name
+- Issued Date
+- Due Date
+- Returned Date
+
+#### Return Workflow
+
+```text
+Identify User
+      ↓
+Identify Borrowed Book
+      ↓
+Verify Transaction
+      ↓
+Record Returned Date
+      ↓
+Update Book Status
+      ↓
+Update Library Records
+```
+
+---
+
+## Records Section
+
+The system provides a centralized **Records Section** for viewing different categories of library information.
+
+The Records section includes:
+
+###  Attendance
+
+Records library user attendance and related activity.
+
+###  Borrowed Books
+
+Displays books currently recorded as borrowed.
+
+Information may include:
+
+- Accession Number
+- Call Number
+- Book Title
+- Student Name
+- Issued Date
+- Due Date
+
+###  Returned Books
+
+Displays completed book return transactions.
+
+Information may include:
+
+- Accession Number
+- Call Number
+- Book Title
+- Borrower's Name
+- Issued Date
+- Due Date
+- Returned Date
+
+###  Inventory
+
+Provides records related to the library's book inventory.
+
+###  Book Request
+
+Manages requests for books that users would like the library to acquire or provide.
+
+---
+
+## Search
+
+The system includes a search function to help locate relevant library information.
+
+Search functionality can be used to retrieve book, user, or transaction records more efficiently.
+
+---
+
+##  Reports and Print Preview
+
+The Records section provides **Load Data** and **Print Preview** functionality for library records.
+
+### Reporting Workflow
+
+```text
+Select Record Category
+        ↓
+Load Data
+        ↓
+Display Records
+        ↓
+Print Preview
+        ↓
+Print / Export Report
+```
+
+### Supported Report Format
+
+**PDF**
+
+The portfolio implementation focuses on PDF-based report generation and printable records.
+
+> Excel export is not currently included in the portfolio implementation.
+
+---
+
+##  User Information
+
+The system displays the currently identified user or student.
+
+Example:
+
+```text
+STUDENT ID: 02311244
+```
+
+User identification allows library transactions to be associated with the appropriate library user.
+
+---
+
+##  Library Record Categories
+
+The system manages several categories of library records:
+
+```text
+┌──────────────────────────────┐
+│       LIBRARY RECORDS        │
+├──────────────────────────────┤
+│ 📅 Attendance                │
+│ 📚 Borrowed Books            │
+│ 🔄 Returned Books            │
+│ 📦 Inventory                 │
+│ 📖 Book Requests             │
+└──────────────────────────────┘
+```
+
+---
+##  Technology Stack
 
 | Technology | Purpose |
 |---|---|
-| C# | Application development |
-| MySQL | Database management |
-| RFID | User identification |
-| LAN | System connectivity |
-| Visual Studio | Development environment |
-| Git/GitHub | Version control and project documentation |
+| **C#** | Application development |
+| **.NET / Windows Forms** | Desktop application |
+| **MySQL** | Database management |
+| **SQL** | Database operations |
+| **RFID** | User identification |
+| **Visual Studio** | Development environment |
+| **Git** | Version control |
+| **GitHub** | Source code management |
+| **PDF Reporting** | Report generation and document export |
 
-## System Workflow
+---
+
+##  System Workflow
+
+The overall system workflow can be represented as:
 
 ```text
-RFID Card/Tag
-      ↓
-RFID Reader
-      ↓
-User Identification
-      ↓
-Library Management System
-      ↓
-MySQL Database
-      ↓
-Transaction / Record Management
-      ↓
-Reports
+                    ┌─────────────────┐
+                    │   RFID Reader   │
+                    └────────┬────────┘
+                             │
+                             ↓
+                    ┌─────────────────┐
+                    │ User Identification │
+                    └────────┬────────┘
+                             │
+                             ↓
+              ┌──────────────────────────────┐
+              │   Library Management System  │
+              └──────────────┬───────────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        ↓                    ↓                    ↓
+   Book Management      Issue / Return       Book Request
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             ↓
+                   ┌──────────────────┐
+                   │     Database     │
+                   └────────┬─────────┘
+                            ↓
+                   ┌──────────────────┐
+                   │     Records      │
+                   ├──────────────────┤
+                   │ Attendance       │
+                   │ Borrowed Books   │
+                   │ Returned Books   │
+                   │ Inventory        │
+                   │ Book Requests    │
+                   └────────┬─────────┘
+                            ↓
+                   ┌──────────────────┐
+                   │ Print Preview /  │
+                   │ PDF Report       │
+                   └──────────────────┘
 ```
 
-##  Database
+---
 
-The system uses a relational database to manage information such as:
+##  Data Management
 
-- Users
-- Books
-- RFID identifiers
+The system manages information related to:
+
+### Users
+
+- Student/User ID
+- RFID identifier
+- User information
+
+### Books
+
+- Accession Number
+- Call Number
+- Book Title
+- Bibliographic information
+- Availability
+
+### Transactions
+
 - Borrowing records
 - Returning records
-- Transaction history
+- Issued Date
+- Due Date
+- Returned Date
 
-##  Software Development Concepts Demonstrated
+### Library Records
 
-- Object-Oriented Programming
-- CRUD operations
-- Database design
-- Relational database management
-- User authentication
-- Data validation
-- RFID integration
-- System analysis and design
-- Software testing
-- Software documentation
-- Software quality evaluation
+- Attendance
+- Borrowed Books
+- Returned Books
+- Inventory
+- Book Requests
 
-##  Security Considerations
-
-The system is designed with basic application security considerations such as:
-
-- User authentication
-- Controlled access to system functions
-- Database validation
-- Protection of user information
-
-**Important:** This repository contains documentation and/or demonstration materials only. No real user records, passwords, RFID identifiers, or confidential institutional data should be uploaded.
+---
 
 ##  Screenshots
 
-Screenshots will be added to this section when the original system and demonstration materials are available.
+### Borrowed Books
+
+The Borrowed Books module displays recorded borrowing transactions.
+
+### Returned Books
+
+The Returned Books module displays completed book return transactions.
+
+### Records Section
+
+The Records Section provides access to:
+
+- Attendance
+- Borrowed Books
+- Returned Books
+- Inventory
+- Book Requests
+
+> Screenshots will be added after sensitive information such as real student IDs and names has been removed or anonymized.
+
+---
+
+##  Software Engineering Concepts
+
+This project demonstrates practical application of:
+
+- Object-Oriented Programming
+- Database-driven application development
+- CRUD operations
+- SQL
+- Relational database design
+- RFID integration
+- User identification
+- Transaction processing
+- Data validation
+- Record management
+- Search functionality
+- Report generation
+- Print preview
+- Error handling
+- Software documentation
+- Version control using Git
+
+---
+
+##  Data Privacy
+
+This repository should contain **demonstration data only**.
+
+The following should not be uploaded to a public GitHub repository:
+
+- Real student information
+- Real student IDs
+- Real RFID identifiers
+- Real library records
+- Passwords
+- Database credentials
+- Confidential institutional documents
+
+Screenshots should also be anonymized when necessary.
+
+---
 
 ##  Current Limitations
 
-The current documented version has the following limitations:
+The portfolio version may differ from the original institutional implementation.
 
-- No direct Excel export
-- No direct document-printing functionality
-- Original source code is not currently included in this repository
-- Additional testing documentation may be added in future versions
+Current limitations may include:
+
+- Basic user interface
+- Limited authentication functionality
+- Limited reporting customization
+- PDF reporting instead of Excel export
+- RFID functionality dependent on compatible hardware
+- Some administrative functions requiring further development
+
+---
 
 ##  Future Improvements
 
-Planned improvements include:
+### Authentication
 
-- Excel export
-- PDF report generation
-- Printable reports
-- Improved reporting dashboard
-- REST API integration
+- Administrator login
+- Librarian accounts
 - Role-based access control
-- Automated database backup
-- Enhanced RFID integration
-- Unit and integration testing
-- Improved user interface
+- Secure password hashing
 
-## Project Background
+###  RFID
 
-This project was developed as part of an academic/research-oriented software development project and demonstrates the application of software engineering and information technology concepts to a real-world library management problem.
+- Automatic RFID reader detection
+- RFID registration
+- RFID card management
+- Improved RFID transaction handling
 
-## Developer
+###  Library Management
 
-**Erika G. Llabres**
+- Advanced book search
+- Book reservation
+- Due-date monitoring
+- Overdue detection
+- Fine calculation
+- Book availability notifications
 
-Computer Engineering Professional  
-Master in Information Technology – Software Development
+###  Reporting
 
-### Areas of Interest
+- PDF reports
+- Excel export
+- Date-range filtering
+- Attendance reports
+- Inventory reports
+- Borrowing reports
+- Returning reports
+- Statistical dashboards
 
-- Software Development
+###  System Modernization
+
+- ASP.NET Core Web API
+- REST API
+- Web-based interface
+- Entity Framework Core
+- Mobile-friendly interface
+- Cloud database integration
+
+###  Software Quality
+
+- Unit testing
+- Integration testing
+- Automated testing
+- Logging
+- Dependency injection
+- Improved application architecture
+
+---
+
+##  Project Background
+
+This project originated from an academic/research-oriented **RFID-based Library Management System** project.
+
+The GitHub repository is being developed as a **software development portfolio project** to demonstrate programming, database, RFID integration, transaction processing, reporting, and software engineering skills.
+
+The portfolio version is a recreated implementation and does not contain the original institutional source code or confidential institutional data.
+
+---
+
+##  Developer
+
+### Erika G. Llabres
+
+**Computer Engineer | Master in Information Technology – Software Development**
+
+Currently transitioning into professional **Software Development / Software Engineering**.
+
+### Technical Interests
+
 - C# / .NET
+- Software Development
 - Backend Development
 - Database Development
-- API Development
+- REST APIs
+- Application Development
+- Python
+- SQL
 - Software Engineering
 
 ---
+
+## 📫 Connect With Me
+
+- **LinkedIn:** https://www.linkedin.com/in/erkallbrs/
+- **Email:** eksllabres@gmail.com
