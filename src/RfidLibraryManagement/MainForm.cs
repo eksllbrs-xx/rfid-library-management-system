@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using RfidLibraryManagement.Forms;
 
 namespace RfidLibraryManagement
 {
@@ -76,13 +77,11 @@ namespace RfidLibraryManagement
         }
 
         private void AdminButton_Click(object? sender, EventArgs e)
-        {
-            MessageBox.Show(
-                "Admin / Library Staff login will be implemented next.",
-                "Admin Login",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-        }
+{
+    using AdminLoginForm loginForm = new AdminLoginForm();
+
+    loginForm.ShowDialog();
+}
 
         private void RfidButton_Click(object? sender, EventArgs e)
         {
