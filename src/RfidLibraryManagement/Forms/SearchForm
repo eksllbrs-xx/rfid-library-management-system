@@ -1,0 +1,441 @@
+using System;
+using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using RfidLibraryManagement.Data;
+
+namespace RfidLibraryManagement.Forms
+{
+    public class SearchForm : Form
+    {
+        private TextBox searchTextBox = null!;
+        private ComboBox searchTypeComboBox = null!;
+        private Button searchButton = null!;
+        private Button clearButton = null!;
+        private Button closeButton = null!;
+        private DataGridView resultsGrid = null!;
+
+        public SearchForm()
+        {
+            InitializeForm();
+        }
+
+        private void InitializeForm()
+        {
+            Text = "Library Search";
+            StartPosition = FormStartPosition.CenterScreen;
+            Size = new Size(1100, 650);
+            MinimumSize = new Size(900, 550);
+
+            Label titleLabel = new Label
+            {
+                Text = "LIBRARY SEARCH",
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+                Location = new Point(440, 20)
+            };
+
+            Label searchTypeLabel = new Label
+            {
+                Text = "Search By:",
+                AutoSize = true,
+                Font = new Font("Segoe UI", 10),
+                Location = new Point(30, 85)
+            };
+
+            searchTypeComboBox = new ComboBox
+            {
+                Location = new Point(110, 80),
+                Width = 180,
+                DropDownStyle =
+                    ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 10)
+            };
+
+            searchTypeComboBox.Items.AddRange(
+                new object[]
+                {
+                    "Book Title",
+                    "Author",
+                    "Accession Number",
+                    "Call Number",
+                    "ISBN",
+                    "Category",
+                    "Borrower ID",
+                    "Borrower Name"
+                });
+
+            searchTypeComboBox.SelectedIndex = 0;
+
+            searchTextBox = new TextBox
+            {
+                Location = new Point(310, 80),
+                Width = 430,
+                Font = new Font("Segoe UI", 10)
+            };
+
+            searchTextBox.KeyDown += SearchTextBox_KeyDown;
+
+            searchButton = new Button
+            {
+                Text = "SEARCH",
+                Location = new Point(755, 77),
+                Size = new Size(110, 35),
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            searchButton.Click += SearchButton_Click;
+
+            clearButton = new Button
+            {
+                Text = "CLEAR",
+                Location = new Point(875, 77),
+                Size = new Size(90, 35),
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            clearButton.Click += ClearButton_Click;
+
+            resultsGrid = new DataGridView
+            {
+                Location = new Point(30, 135),
+                Size = new Size(1020, 410),
+                Anchor =
+                    AnchorStyles.Top |
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left |
+                    AnchorStyles.Right,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                SelectionMode =
+                    DataGridViewSelectionMode.FullRowSelect,
+                AutoSizeColumnsMode =
+                    DataGridViewAutoSizeColumnsMode.DisplayedCells,
+                AutoGenerateColumns = true
+            };
+
+            closeButton = new Button
+            {
+                Text = "CLOSE",
+                Location = new Point(930, 565),
+                Size = new Size(120, 40),
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Right,
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            closeButton.Click +=
+                CloseButton_Click;
+
+            Controls.Add(titleLabel);
+            Controls.Add(searchTypeLabel);
+            Controls.Add(searchTypeComboBox);
+            Controls.Add(searchTextBox);
+            Controls.Add(searchButton);
+            Controls.Add(clearButton);
+            Controls.Add(resultsGrid);
+            Controls.Add(closeButton);
+        }
+
+        private void SearchTextBox_KeyDown(
+            object? sender,
+            KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                SearchBooks();
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void SearchButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            SearchBooks();
+        }
+
+        private void SearchBooks()
+        {
+            string searchText =
+                searchTextBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                MessageBox.Show(
+                    "Please enter a search value.",
+                    "Search",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                searchTextBox.Focus();
+                return;
+            }
+
+            string selectedType =
+                searchTypeComboBox.SelectedItem?
+                    .ToString() ?? "Book Title";
+
+            string column;
+
+            switch (selectedType)
+            {
+                case "Book Title":
+                    column = "b.title";
+                    break;
+
+                case "Author":
+                    column = "b.author";
+                    break;
+
+                case "Accession Number":
+                    column = "b.accession_number";
+                    break;
+
+                case "Call Number":
+                    column = "b.call_number";
+                    break;
+
+                case "ISBN":
+                    column = "b.isbn";
+                    break;
+
+                case "Category":
+                    column = "b.category";
+                    break;
+
+                case "Borrower ID":
+                    SearchBorrowers(
+                        "lu.student_faculty_id",
+                        searchText);
+                    return;
+
+                case "Borrower Name":
+                    SearchBorrowersByName(searchText);
+                    return;
+
+                default:
+                    column = "b.title";
+                    break;
+            }
+
+            try
+            {
+                string query = $@"
+                    SELECT
+                        b.book_id,
+                        b.accession_number,
+                        b.call_number,
+                        b.isbn,
+                        b.title,
+                        b.author,
+                        b.edition,
+                        b.category,
+                        b.nature_of_content,
+                        b.location,
+                        b.shelf_number,
+                        b.copies,
+                        b.available_copies,
+                        b.price,
+                        b.date_registered,
+                        b.status
+                    FROM books b
+                    WHERE {column} LIKE @search
+                    ORDER BY b.title ASC;";
+
+                resultsGrid.DataSource =
+                    ExecuteQuery(
+                        query,
+                        "@search",
+                        "%" + searchText + "%");
+
+                if (resultsGrid.Rows.Count == 0)
+                {
+                    MessageBox.Show(
+                        "No matching records found.",
+                        "Search",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Database error:\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred:\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void SearchBorrowers(
+            string column,
+            string searchText)
+        {
+            try
+            {
+                string query = $@"
+                    SELECT
+                        lu.user_id,
+                        lu.student_faculty_id,
+                        lu.rfid_uid,
+                        CONCAT(
+                            lu.first_name,
+                            ' ',
+                            lu.middle_name,
+                            ' ',
+                            lu.last_name
+                        ) AS full_name,
+                        lu.user_type,
+                        lu.department,
+                        lu.course,
+                        lu.email,
+                        lu.contact_number,
+                        lu.status
+                    FROM library_users lu
+                    WHERE {column} LIKE @search
+                    ORDER BY
+                        lu.last_name,
+                        lu.first_name;";
+
+                resultsGrid.DataSource =
+                    ExecuteQuery(
+                        query,
+                        "@search",
+                        "%" + searchText + "%");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to search borrowers.\n\n" +
+                    ex.Message,
+                    "Search Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void SearchBorrowersByName(
+            string searchText)
+        {
+            try
+            {
+                string query = @"
+                    SELECT
+                        lu.user_id,
+                        lu.student_faculty_id,
+                        lu.rfid_uid,
+                        CONCAT(
+                            lu.first_name,
+                            ' ',
+                            lu.middle_name,
+                            ' ',
+                            lu.last_name
+                        ) AS full_name,
+                        lu.user_type,
+                        lu.department,
+                        lu.course,
+                        lu.email,
+                        lu.contact_number,
+                        lu.status
+                    FROM library_users lu
+                    WHERE CONCAT(
+                        lu.first_name,
+                        ' ',
+                        lu.middle_name,
+                        ' ',
+                        lu.last_name
+                    ) LIKE @search
+                    ORDER BY
+                        lu.last_name,
+                        lu.first_name;";
+
+                resultsGrid.DataSource =
+                    ExecuteQuery(
+                        query,
+                        "@search",
+                        "%" + searchText + "%");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to search borrowers.\n\n" +
+                    ex.Message,
+                    "Search Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private DataTable ExecuteQuery(
+            string query,
+            string parameterName,
+            string parameterValue)
+        {
+            DataTable table = new DataTable();
+
+            using MySqlConnection connection =
+                Database.GetConnection();
+
+            connection.Open();
+
+            using MySqlCommand command =
+                new MySqlCommand(
+                    query,
+                    connection);
+
+            command.Parameters.AddWithValue(
+                parameterName,
+                parameterValue);
+
+            using MySqlDataAdapter adapter =
+                new MySqlDataAdapter(command);
+
+            adapter.Fill(table);
+
+            return table;
+        }
+
+        private void ClearButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            searchTextBox.Clear();
+            resultsGrid.DataSource = null;
+            searchTypeComboBox.SelectedIndex = 0;
+            searchTextBox.Focus();
+        }
+
+        private void CloseButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            Close();
+        }
+    }
+}
