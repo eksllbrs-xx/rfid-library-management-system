@@ -1,0 +1,748 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using RfidLibraryManagement.Data;
+
+namespace RfidLibraryManagement.Forms
+{
+    public class ReturnBookForm : Form
+    {
+        private TextBox accessionNumberTextBox = null!;
+        private TextBox borrowerIdTextBox = null!;
+        private TextBox borrowerNameTextBox = null!;
+        private TextBox bookTitleTextBox = null!;
+        private TextBox issueDateTextBox = null!;
+        private TextBox dueDateTextBox = null!;
+        private DateTimePicker returnDatePicker = null!;
+        private TextBox daysOverdueTextBox = null!;
+        private TextBox fineTextBox = null!;
+        private TextBox remarksTextBox = null!;
+
+        private Button findButton = null!;
+        private Button calculateButton = null!;
+        private Button returnButton = null!;
+        private Button clearButton = null!;
+        private Button closeButton = null!;
+
+        private int borrowId;
+        private int bookId;
+
+        // Library fine rate
+        private const decimal FinePerDay = 20.00m;
+
+        public ReturnBookForm()
+        {
+            InitializeForm();
+        }
+
+        private void InitializeForm()
+        {
+            Text = "Return Book";
+            StartPosition = FormStartPosition.CenterScreen;
+            Size = new Size(650, 650);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+
+            Label titleLabel = new Label
+            {
+                Text = "RETURN BOOK",
+                AutoSize = true,
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                Location = new Point(235, 25)
+            };
+
+            // Accession Number
+            Label accessionLabel = new Label
+            {
+                Text = "Accession Number:",
+                AutoSize = true,
+                Location = new Point(40, 90),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            accessionNumberTextBox = new TextBox
+            {
+                Location = new Point(190, 85),
+                Width = 250,
+                Font = new Font("Segoe UI", 10)
+            };
+
+            findButton = new Button
+            {
+                Text = "FIND",
+                Location = new Point(455, 83),
+                Size = new Size(100, 35)
+            };
+
+            findButton.Click += FindButton_Click;
+
+            // Borrower ID
+            Label borrowerIdLabel = new Label
+            {
+                Text = "Borrower ID:",
+                AutoSize = true,
+                Location = new Point(40, 135),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            borrowerIdTextBox = new TextBox
+            {
+                Location = new Point(190, 130),
+                Width = 365,
+                Font = new Font("Segoe UI", 10),
+                ReadOnly = true
+            };
+
+            // Borrower Name
+            Label borrowerNameLabel = new Label
+            {
+                Text = "Borrower Name:",
+                AutoSize = true,
+                Location = new Point(40, 180),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            borrowerNameTextBox = new TextBox
+            {
+                Location = new Point(190, 175),
+                Width = 365,
+                Font = new Font("Segoe UI", 10),
+                ReadOnly = true
+            };
+
+            // Book Title
+            Label bookTitleLabel = new Label
+            {
+                Text = "Book Title:",
+                AutoSize = true,
+                Location = new Point(40, 225),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            bookTitleTextBox = new TextBox
+            {
+                Location = new Point(190, 220),
+                Width = 365,
+                Font = new Font("Segoe UI", 10),
+                ReadOnly = true
+            };
+
+            // Issue Date
+            Label issueDateLabel = new Label
+            {
+                Text = "Issue Date:",
+                AutoSize = true,
+                Location = new Point(40, 270),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            issueDateTextBox = new TextBox
+            {
+                Location = new Point(190, 265),
+                Width = 365,
+                Font = new Font("Segoe UI", 10),
+                ReadOnly = true
+            };
+
+            // Due Date
+            Label dueDateLabel = new Label
+            {
+                Text = "Due Date:",
+                AutoSize = true,
+                Location = new Point(40, 315),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            dueDateTextBox = new TextBox
+            {
+                Location = new Point(190, 310),
+                Width = 365,
+                Font = new Font("Segoe UI", 10),
+                ReadOnly = true
+            };
+
+            // Return Date
+            Label returnDateLabel = new Label
+            {
+                Text = "Return Date:",
+                AutoSize = true,
+                Location = new Point(40, 360),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            returnDatePicker = new DateTimePicker
+            {
+                Location = new Point(190, 355),
+                Width = 250,
+                Format = DateTimePickerFormat.Short,
+                Font = new Font("Segoe UI", 10)
+            };
+
+            returnDatePicker.ValueChanged += ReturnDatePicker_ValueChanged;
+
+            // Days Overdue
+            Label daysOverdueLabel = new Label
+            {
+                Text = "Days Overdue:",
+                AutoSize = true,
+                Location = new Point(40, 405),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            daysOverdueTextBox = new TextBox
+            {
+                Location = new Point(190, 400),
+                Width = 120,
+                Font = new Font("Segoe UI", 10),
+                ReadOnly = true
+            };
+
+            // Fine
+            Label fineLabel = new Label
+            {
+                Text = "Fine:",
+                AutoSize = true,
+                Location = new Point(40, 450),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            fineTextBox = new TextBox
+            {
+                Location = new Point(190, 445),
+                Width = 120,
+                Font = new Font("Segoe UI", 10),
+                ReadOnly = true
+            };
+
+            // Remarks
+            Label remarksLabel = new Label
+            {
+                Text = "Remarks:",
+                AutoSize = true,
+                Location = new Point(40, 495),
+                Font = new Font("Segoe UI", 10)
+            };
+
+            remarksTextBox = new TextBox
+            {
+                Location = new Point(190, 490),
+                Width = 365,
+                Height = 55,
+                Multiline = true,
+                Font = new Font("Segoe UI", 10)
+            };
+
+            // Buttons
+            calculateButton = new Button
+            {
+                Text = "CALCULATE",
+                Location = new Point(40, 565),
+                Size = new Size(110, 35)
+            };
+
+            returnButton = new Button
+            {
+                Text = "RETURN BOOK",
+                Location = new Point(165, 565),
+                Size = new Size(120, 35)
+            };
+
+            clearButton = new Button
+            {
+                Text = "CLEAR",
+                Location = new Point(300, 565),
+                Size = new Size(100, 35)
+            };
+
+            closeButton = new Button
+            {
+                Text = "CLOSE",
+                Location = new Point(415, 565),
+                Size = new Size(100, 35)
+            };
+
+            calculateButton.Click += CalculateButton_Click;
+            returnButton.Click += ReturnButton_Click;
+            clearButton.Click += ClearButton_Click;
+            closeButton.Click += CloseButton_Click;
+
+            Controls.Add(titleLabel);
+
+            Controls.Add(accessionLabel);
+            Controls.Add(accessionNumberTextBox);
+            Controls.Add(findButton);
+
+            Controls.Add(borrowerIdLabel);
+            Controls.Add(borrowerIdTextBox);
+
+            Controls.Add(borrowerNameLabel);
+            Controls.Add(borrowerNameTextBox);
+
+            Controls.Add(bookTitleLabel);
+            Controls.Add(bookTitleTextBox);
+
+            Controls.Add(issueDateLabel);
+            Controls.Add(issueDateTextBox);
+
+            Controls.Add(dueDateLabel);
+            Controls.Add(dueDateTextBox);
+
+            Controls.Add(returnDateLabel);
+            Controls.Add(returnDatePicker);
+
+            Controls.Add(daysOverdueLabel);
+            Controls.Add(daysOverdueTextBox);
+
+            Controls.Add(fineLabel);
+            Controls.Add(fineTextBox);
+
+            Controls.Add(remarksLabel);
+            Controls.Add(remarksTextBox);
+
+            Controls.Add(calculateButton);
+            Controls.Add(returnButton);
+            Controls.Add(clearButton);
+            Controls.Add(closeButton);
+        }
+
+        private void FindButton_Click(object? sender, EventArgs e)
+        {
+            string accessionNumber =
+                accessionNumberTextBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(accessionNumber))
+            {
+                MessageBox.Show(
+                    "Please enter the accession number.",
+                    "Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                accessionNumberTextBox.Focus();
+                return;
+            }
+
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+                string query = @"
+                    SELECT
+                        bt.borrow_id,
+                        b.book_id,
+                        b.title,
+                        lu.student_faculty_id,
+                        CONCAT(
+                            lu.first_name,
+                            ' ',
+                            lu.middle_name,
+                            ' ',
+                            lu.last_name
+                        ) AS borrower_name,
+                        bt.issued_date,
+                        bt.due_date
+                    FROM borrow_transactions bt
+                    INNER JOIN books b
+                        ON bt.book_id = b.book_id
+                    INNER JOIN library_users lu
+                        ON bt.user_id = lu.user_id
+                    WHERE b.accession_number = @accession
+                      AND bt.status = 'BORROWED'
+                    ORDER BY bt.issued_date DESC
+                    LIMIT 1;";
+
+                using MySqlCommand command =
+                    new MySqlCommand(query, connection);
+
+                command.Parameters.AddWithValue(
+                    "@accession",
+                    accessionNumber);
+
+                using MySqlDataReader reader =
+                    command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    borrowId = Convert.ToInt32(
+                        reader["borrow_id"]);
+
+                    bookId = Convert.ToInt32(
+                        reader["book_id"]);
+
+                    borrowerIdTextBox.Text =
+                        reader["student_faculty_id"].ToString();
+
+                    borrowerNameTextBox.Text =
+                        reader["borrower_name"].ToString();
+
+                    bookTitleTextBox.Text =
+                        reader["title"].ToString();
+
+                    DateTime issueDate =
+                        Convert.ToDateTime(reader["issued_date"]);
+
+                    DateTime dueDate =
+                        Convert.ToDateTime(reader["due_date"]);
+
+                    issueDateTextBox.Text =
+                        issueDate.ToShortDateString();
+
+                    dueDateTextBox.Text =
+                        dueDate.ToShortDateString();
+
+                    CalculateFine();
+
+                    MessageBox.Show(
+                        "Borrowed book record found.",
+                        "Record Found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "No active borrowed transaction was found for this accession number.",
+                        "Not Found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    ClearFields();
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Database error:\n\n" + ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred:\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void ReturnDatePicker_ValueChanged(
+            object? sender,
+            EventArgs e)
+        {
+            CalculateFine();
+        }
+
+        private void CalculateButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            CalculateFine();
+        }
+
+        private void CalculateFine()
+        {
+            if (string.IsNullOrWhiteSpace(
+                dueDateTextBox.Text))
+            {
+                daysOverdueTextBox.Text = "0";
+                fineTextBox.Text = "₱0.00";
+                return;
+            }
+
+            if (!DateTime.TryParse(
+                dueDateTextBox.Text,
+                out DateTime dueDate))
+            {
+                return;
+            }
+
+            DateTime returnDate =
+                returnDatePicker.Value.Date;
+
+            int daysOverdue =
+                (returnDate - dueDate.Date).Days;
+
+            if (daysOverdue < 0)
+            {
+                daysOverdue = 0;
+            }
+
+            decimal fine =
+                daysOverdue * FinePerDay;
+
+            daysOverdueTextBox.Text =
+                daysOverdue.ToString();
+
+            fineTextBox.Text =
+                $"₱{fine:N2}";
+        }
+
+        private void ReturnButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            if (borrowId <= 0 || bookId <= 0)
+            {
+                MessageBox.Show(
+                    "Please find a valid borrowed book first.",
+                    "Return Book",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
+            CalculateFine();
+
+            if (!DateTime.TryParse(
+                dueDateTextBox.Text,
+                out DateTime dueDate))
+            {
+                MessageBox.Show(
+                    "Invalid due date.",
+                    "Return Book",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            DateTime returnDate =
+                returnDatePicker.Value.Date;
+
+            if (returnDate < dueDate.Date)
+            {
+                DialogResult result = MessageBox.Show(
+                    "The return date is earlier than the due date.\n\n" +
+                    "Do you want to continue?",
+                    "Confirm Return Date",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result != DialogResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            int daysOverdue =
+                Math.Max(
+                    0,
+                    (returnDate - dueDate.Date).Days);
+
+            decimal fine =
+                daysOverdue * FinePerDay;
+
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+                using MySqlTransaction transaction =
+                    connection.BeginTransaction();
+
+                // Verify the transaction is still active.
+                string checkQuery = @"
+                    SELECT status
+                    FROM borrow_transactions
+                    WHERE borrow_id = @borrowId
+                    FOR UPDATE;";
+
+                using MySqlCommand checkCommand =
+                    new MySqlCommand(
+                        checkQuery,
+                        connection,
+                        transaction);
+
+                checkCommand.Parameters.AddWithValue(
+                    "@borrowId",
+                    borrowId);
+
+                object? statusResult =
+                    checkCommand.ExecuteScalar();
+
+                if (statusResult == null ||
+                    statusResult.ToString() != "BORROWED")
+                {
+                    transaction.Rollback();
+
+                    MessageBox.Show(
+                        "This transaction has already been returned or is no longer active.",
+                        "Return Book",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    ClearFields();
+                    return;
+                }
+
+                // Record the return transaction.
+                string returnQuery = @"
+                    INSERT INTO return_transactions
+                    (
+                        borrow_id,
+                        returned_date,
+                        days_overdue,
+                        fine_amount,
+                        remarks
+                    )
+                    VALUES
+                    (
+                        @borrowId,
+                        @returnedDate,
+                        @daysOverdue,
+                        @fineAmount,
+                        @remarks
+                    );";
+
+                using MySqlCommand returnCommand =
+                    new MySqlCommand(
+                        returnQuery,
+                        connection,
+                        transaction);
+
+                returnCommand.Parameters.AddWithValue(
+                    "@borrowId",
+                    borrowId);
+
+                returnCommand.Parameters.AddWithValue(
+                    "@returnedDate",
+                    returnDate);
+
+                returnCommand.Parameters.AddWithValue(
+                    "@daysOverdue",
+                    daysOverdue);
+
+                returnCommand.Parameters.AddWithValue(
+                    "@fineAmount",
+                    fine);
+
+                returnCommand.Parameters.AddWithValue(
+                    "@remarks",
+                    remarksTextBox.Text.Trim());
+
+                returnCommand.ExecuteNonQuery();
+
+                // Mark borrowing transaction as returned.
+                string updateBorrowQuery = @"
+                    UPDATE borrow_transactions
+                    SET
+                        status = 'RETURNED',
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE borrow_id = @borrowId;";
+
+                using MySqlCommand updateBorrowCommand =
+                    new MySqlCommand(
+                        updateBorrowQuery,
+                        connection,
+                        transaction);
+
+                updateBorrowCommand.Parameters.AddWithValue(
+                    "@borrowId",
+                    borrowId);
+
+                updateBorrowCommand.ExecuteNonQuery();
+
+                // Increase available copies.
+                string updateBookQuery = @"
+                    UPDATE books
+                    SET
+                        available_copies =
+                            LEAST(
+                                copies,
+                                available_copies + 1
+                            ),
+                        status = 'AVAILABLE',
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE book_id = @bookId;";
+
+                using MySqlCommand updateBookCommand =
+                    new MySqlCommand(
+                        updateBookQuery,
+                        connection,
+                        transaction);
+
+                updateBookCommand.Parameters.AddWithValue(
+                    "@bookId",
+                    bookId);
+
+                updateBookCommand.ExecuteNonQuery();
+
+                transaction.Commit();
+
+                MessageBox.Show(
+                    "Book returned successfully!\n\n" +
+                    $"Days Overdue: {daysOverdue}\n" +
+                    $"Fine: ₱{fine:N2}",
+                    "Return Successful",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                ClearFields();
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Database error while processing the return:\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred:\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void ClearButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            ClearFields();
+        }
+
+        private void ClearFields()
+        {
+            borrowId = 0;
+            bookId = 0;
+
+            accessionNumberTextBox.Clear();
+            borrowerIdTextBox.Clear();
+            borrowerNameTextBox.Clear();
+            bookTitleTextBox.Clear();
+            issueDateTextBox.Clear();
+            dueDateTextBox.Clear();
+
+            returnDatePicker.Value =
+                DateTime.Today;
+
+            daysOverdueTextBox.Text = "0";
+            fineTextBox.Text = "₱0.00";
+            remarksTextBox.Clear();
+
+            accessionNumberTextBox.Focus();
+        }
+
+        private void CloseButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            Close();
+        }
+    }
+}
