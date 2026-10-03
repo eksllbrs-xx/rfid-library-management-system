@@ -2,14 +2,6 @@
 RFID-based Library Management System for managing library users, books, and transactions using C# and MySQL.
 
 
-# RFID-Based Library Management System
-
-A desktop-based **RFID Library Management System** developed to support library operations such as user identification, book management, book issuance and returns, attendance monitoring, inventory management, book requests, and library record management.
-
-The system uses **RFID technology** to assist in identifying registered users and maintaining library transactions and records in a centralized database.
-
----
-
 ##  Project Overview
 
 The RFID-Based Library Management System is designed to improve the efficiency of library operations by reducing manual record handling and providing a centralized system for managing library activities.
