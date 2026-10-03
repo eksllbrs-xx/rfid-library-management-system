@@ -1,5 +1,65 @@
-#  RFID-Based Library Management System
+# 📚 RFID-Based Library Management System
 
 A desktop-based **RFID Library Management System** developed to support library operations such as user identification, book management, book issuance and returns, attendance monitoring, inventory management, book requests, and library record management.
 
 The system uses **RFID technology** to assist in identifying registered users and maintaining library transactions and records in a centralized database.
+
+---
+
+## 📌 Project Overview
+
+The RFID-Based Library Management System is designed to improve the efficiency of library operations by reducing manual record handling and providing a centralized system for managing library activities.
+
+The system provides modules for:
+
+- User identification
+- Book management
+- Book issuance
+- Book returns
+- Borrowed book monitoring
+- Returned book monitoring
+- Attendance records
+- Inventory records
+- Book requests
+- Search
+- Report and print preview
+
+The system also provides a reporting function that allows library records to be prepared for printing and exported as **PDF documents**.
+
+---
+
+## 🎯 Objectives
+
+The system aims to:
+
+- Automate common library transactions
+- Use RFID technology for user identification
+- Maintain organized library records
+- Manage books and inventory efficiently
+- Record borrowing and returning transactions
+- Monitor library user attendance
+- Manage book requests
+- Provide searchable library records
+- Generate printable reports
+- Reduce repetitive manual data entry
+
+---
+
+## ✨ Key Features
+
+### 📡 RFID-Based User Identification
+
+The system uses RFID technology to identify registered library users.
+
+A registered RFID card or tag can be scanned to identify the user before performing library transactions.
+
+```text
+RFID Card / Tag
+       ↓
+RFID Reader
+       ↓
+RFID Identification
+       ↓
+Registered User
+       ↓
+Library Transaction
