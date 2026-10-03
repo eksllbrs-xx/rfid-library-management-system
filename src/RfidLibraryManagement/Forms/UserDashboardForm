@@ -1,0 +1,360 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace RfidLibraryManagement.Forms
+{
+    public class UserDashboardForm : Form
+    {
+        private string borrowerId;
+        private string borrowerName;
+
+        private Label welcomeLabel = null!;
+        private Button searchButton = null!;
+        private Button borrowedBooksButton = null!;
+        private Button returnedBooksButton = null!;
+        private Button bookRequestButton = null!;
+        private Button attendanceButton = null!;
+        private Button logoutButton = null!;
+
+        public UserDashboardForm(
+            string borrowerId,
+            string borrowerName)
+        {
+            this.borrowerId = borrowerId;
+            this.borrowerName = borrowerName;
+
+            InitializeForm();
+        }
+
+        private void InitializeForm()
+        {
+            Text =
+                "RFID Library - User Menu";
+
+            StartPosition =
+                FormStartPosition.CenterScreen;
+
+            Size =
+                new Size(700, 600);
+
+            FormBorderStyle =
+                FormBorderStyle.FixedDialog;
+
+            MaximizeBox = false;
+
+            // =====================================================
+            // TITLE
+            // =====================================================
+
+            Label titleLabel = new Label
+            {
+                Text =
+                    "RFID LIBRARY MANAGEMENT SYSTEM",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+
+                Location =
+                    new Point(125, 35)
+            };
+
+            // =====================================================
+            // WELCOME
+            // =====================================================
+
+            welcomeLabel = new Label
+            {
+                Text =
+                    $"Welcome, {borrowerName}",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    13,
+                    FontStyle.Bold),
+
+                Location =
+                    new Point(255, 85)
+            };
+
+            // =====================================================
+            // BORROWER ID
+            // =====================================================
+
+            Label borrowerIdLabel = new Label
+            {
+                Text =
+                    $"ID Number: {borrowerId}",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(275, 115)
+            };
+
+            // =====================================================
+            // SEARCH
+            // =====================================================
+
+            searchButton = new Button
+            {
+                Text = "SEARCH BOOKS",
+
+                Location =
+                    new Point(75, 165),
+
+                Size =
+                    new Size(250, 55),
+
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
+            };
+
+            searchButton.Click +=
+                SearchButton_Click;
+
+            // =====================================================
+            // BORROWED BOOKS
+            // =====================================================
+
+            borrowedBooksButton = new Button
+            {
+                Text = "BORROWED BOOKS",
+
+                Location =
+                    new Point(365, 165),
+
+                Size =
+                    new Size(250, 55),
+
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
+            };
+
+            borrowedBooksButton.Click +=
+                BorrowedBooksButton_Click;
+
+            // =====================================================
+            // RETURNED BOOKS
+            // =====================================================
+
+            returnedBooksButton = new Button
+            {
+                Text = "RETURNED BOOKS",
+
+                Location =
+                    new Point(75, 240),
+
+                Size =
+                    new Size(250, 55),
+
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
+            };
+
+            returnedBooksButton.Click +=
+                ReturnedBooksButton_Click;
+
+            // =====================================================
+            // BOOK REQUEST
+            // =====================================================
+
+            bookRequestButton = new Button
+            {
+                Text = "BOOK REQUEST",
+
+                Location =
+                    new Point(365, 240),
+
+                Size =
+                    new Size(250, 55),
+
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
+            };
+
+            bookRequestButton.Click +=
+                BookRequestButton_Click;
+
+            // =====================================================
+            // ATTENDANCE
+            // =====================================================
+
+            attendanceButton = new Button
+            {
+                Text = "ATTENDANCE",
+
+                Location =
+                    new Point(75, 315),
+
+                Size =
+                    new Size(250, 55),
+
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
+            };
+
+            attendanceButton.Click +=
+                AttendanceButton_Click;
+
+            // =====================================================
+            // LOGOUT
+            // =====================================================
+
+            logoutButton = new Button
+            {
+                Text = "LOGOUT",
+
+                Location =
+                    new Point(365, 315),
+
+                Size =
+                    new Size(250, 55),
+
+                Font = new Font(
+                    "Segoe UI",
+                    11,
+                    FontStyle.Bold)
+            };
+
+            logoutButton.Click +=
+                LogoutButton_Click;
+
+            // =====================================================
+            // ADD CONTROLS
+            // =====================================================
+
+            Controls.Add(titleLabel);
+            Controls.Add(welcomeLabel);
+            Controls.Add(borrowerIdLabel);
+
+            Controls.Add(searchButton);
+            Controls.Add(borrowedBooksButton);
+            Controls.Add(returnedBooksButton);
+            Controls.Add(bookRequestButton);
+            Controls.Add(attendanceButton);
+            Controls.Add(logoutButton);
+        }
+
+        // =========================================================
+        // SEARCH BOOKS
+        // =========================================================
+
+        private void SearchButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            using SearchForm searchForm =
+                new SearchForm();
+
+            searchForm.ShowDialog();
+        }
+
+        // =========================================================
+        // BORROWED BOOKS
+        // =========================================================
+
+        private void BorrowedBooksButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            MessageBox.Show(
+                "Borrowed Books module for the current user " +
+                "will be connected next.",
+                "Borrowed Books",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        // =========================================================
+        // RETURNED BOOKS
+        // =========================================================
+
+        private void ReturnedBooksButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            MessageBox.Show(
+                "Returned Books module for the current user " +
+                "will be connected next.",
+                "Returned Books",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        // =========================================================
+        // BOOK REQUEST
+        // =========================================================
+
+        private void BookRequestButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            MessageBox.Show(
+                "Book Request module will be connected next.",
+                "Book Request",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        // =========================================================
+        // ATTENDANCE
+        // =========================================================
+
+        private void AttendanceButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            MessageBox.Show(
+                $"Attendance recorded for:\n\n" +
+                $"{borrowerName}\n" +
+                $"ID: {borrowerId}\n\n" +
+                "The attendance database transaction " +
+                "will be connected next.",
+                "Attendance",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        // =========================================================
+        // LOGOUT
+        // =========================================================
+
+        private void LogoutButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            DialogResult result =
+                MessageBox.Show(
+                    "Are you sure you want to logout?",
+                    "Confirm Logout",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                Close();
+            }
+        }
+    }
+}
