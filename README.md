@@ -371,9 +371,13 @@ The system manages information related to:
 
 The Borrowed Books module displays recorded borrowing transactions.
 
+<img width="1594" height="955" alt="image" src="https://github.com/user-attachments/assets/ed720853-72fe-4e32-8712-5b15998ca466" />
+
 ### Returned Books
 
 The Returned Books module displays completed book return transactions.
+
+<img width="1633" height="980" alt="image" src="https://github.com/user-attachments/assets/9512fabf-2e8e-4e29-b7f7-1f41f3ef0040" />
 
 ### Records Section
 
@@ -385,7 +389,8 @@ The Records Section provides access to:
 - Inventory
 - Book Requests
 
-> Screenshots will be added after sensitive information such as real student IDs and names has been removed or anonymized.
+<img width="1612" height="954" alt="image" src="https://github.com/user-attachments/assets/d7773cf1-bf94-4b33-bd12-1693f2d66abb" />
+
 
 ---
 
