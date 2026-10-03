@@ -1,1 +1,600 @@
+using System;
+using System.Data;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Pdf;
+using RfidLibraryManagement.Data;
 
+namespace RfidLibraryManagement.Forms
+{
+    public class ReportsForm : Form
+    {
+        private ComboBox reportTypeComboBox = null!;
+        private Button generateButton = null!;
+        private Button closeButton = null!;
+        private DataGridView previewGrid = null!;
+
+        public ReportsForm()
+        {
+            InitializeForm();
+        }
+
+        private void InitializeForm()
+        {
+            Text = "Reports / Print Preview";
+            StartPosition = FormStartPosition.CenterScreen;
+            Size = new Size(1100, 700);
+            MinimumSize = new Size(900, 600);
+
+            Label titleLabel = new Label
+            {
+                Text = "REPORTS / PRINT PREVIEW",
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+                Location = new Point(370, 20)
+            };
+
+            Label reportLabel = new Label
+            {
+                Text = "Report Type:",
+                AutoSize = true,
+                Font = new Font("Segoe UI", 10),
+                Location = new Point(30, 85)
+            };
+
+            reportTypeComboBox = new ComboBox
+            {
+                Location = new Point(130, 80),
+                Width = 260,
+                DropDownStyle =
+                    ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 10)
+            };
+
+            reportTypeComboBox.Items.AddRange(
+                new object[]
+                {
+                    "Book Inventory",
+                    "Borrowed Books",
+                    "Returned Books",
+                    "Attendance",
+                    "Book Requests"
+                });
+
+            reportTypeComboBox.SelectedIndex = 0;
+
+            generateButton = new Button
+            {
+                Text = "GENERATE PDF",
+                Location = new Point(420, 78),
+                Size = new Size(150, 38),
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            generateButton.Click +=
+                GenerateButton_Click;
+
+            previewGrid = new DataGridView
+            {
+                Location = new Point(30, 140),
+                Size = new Size(1020, 450),
+                Anchor =
+                    AnchorStyles.Top |
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left |
+                    AnchorStyles.Right,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                SelectionMode =
+                    DataGridViewSelectionMode.FullRowSelect,
+                AutoSizeColumnsMode =
+                    DataGridViewAutoSizeColumnsMode.DisplayedCells,
+                AutoGenerateColumns = true
+            };
+
+            closeButton = new Button
+            {
+                Text = "CLOSE",
+                Location = new Point(930, 610),
+                Size = new Size(120, 40),
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Right,
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            closeButton.Click +=
+                CloseButton_Click;
+
+            Controls.Add(titleLabel);
+            Controls.Add(reportLabel);
+            Controls.Add(reportTypeComboBox);
+            Controls.Add(generateButton);
+            Controls.Add(previewGrid);
+            Controls.Add(closeButton);
+        }
+
+        private void GenerateButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            string reportType =
+                reportTypeComboBox.SelectedItem?
+                    .ToString() ?? "Book Inventory";
+
+            try
+            {
+                DataTable data =
+                    GetReportData(reportType);
+
+                previewGrid.DataSource = data;
+
+                if (data.Rows.Count == 0)
+                {
+                    MessageBox.Show(
+                        "There are no records available for this report.",
+                        "Report",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    return;
+                }
+
+                string filePath =
+                    CreatePdfReport(
+                        reportType,
+                        data);
+
+                MessageBox.Show(
+                    "PDF report generated successfully.\n\n" +
+                    filePath,
+                    "Report Generated",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                OpenPdf(filePath);
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Database error:\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to generate report.\n\n" +
+                    ex.Message,
+                    "Report Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private DataTable GetReportData(
+            string reportType)
+        {
+            string query;
+
+            switch (reportType)
+            {
+                case "Book Inventory":
+
+                    query = @"
+                        SELECT
+                            accession_number,
+                            call_number,
+                            title,
+                            author,
+                            category,
+                            location,
+                            shelf_number,
+                            copies,
+                            available_copies,
+                            price,
+                            status
+                        FROM books
+                        ORDER BY title;";
+
+                    break;
+
+                case "Borrowed Books":
+
+                    query = @"
+                        SELECT
+                            lu.student_faculty_id
+                                AS borrower_id,
+                            CONCAT(
+                                lu.first_name,
+                                ' ',
+                                lu.middle_name,
+                                ' ',
+                                lu.last_name
+                            ) AS borrower_name,
+                            b.accession_number,
+                            b.title AS book_title,
+                            bt.issued_date,
+                            bt.due_date,
+                            bt.status
+                        FROM borrow_transactions bt
+                        INNER JOIN library_users lu
+                            ON bt.user_id = lu.user_id
+                        INNER JOIN books b
+                            ON bt.book_id = b.book_id
+                        WHERE bt.status IN
+                            ('BORROWED', 'OVERDUE')
+                        ORDER BY bt.due_date;";
+
+                    break;
+
+                case "Returned Books":
+
+                    query = @"
+                        SELECT
+                            lu.student_faculty_id
+                                AS borrower_id,
+                            CONCAT(
+                                lu.first_name,
+                                ' ',
+                                lu.middle_name,
+                                ' ',
+                                lu.last_name
+                            ) AS borrower_name,
+                            b.accession_number,
+                            b.title AS book_title,
+                            bt.issued_date,
+                            bt.due_date,
+                            rt.returned_date,
+                            rt.days_overdue,
+                            rt.fine_amount
+                        FROM return_transactions rt
+                        INNER JOIN borrow_transactions bt
+                            ON rt.borrow_id = bt.borrow_id
+                        INNER JOIN library_users lu
+                            ON bt.user_id = lu.user_id
+                        INNER JOIN books b
+                            ON bt.book_id = b.book_id
+                        ORDER BY rt.returned_date DESC;";
+
+                    break;
+
+                case "Attendance":
+
+                    query = @"
+                        SELECT
+                            lu.student_faculty_id
+                                AS borrower_id,
+                            CONCAT(
+                                lu.first_name,
+                                ' ',
+                                lu.middle_name,
+                                ' ',
+                                lu.last_name
+                            ) AS name,
+                            lu.user_type,
+                            lu.department,
+                            lu.course,
+                            a.attendance_date,
+                            a.time_in,
+                            a.time_out,
+                            a.purpose
+                        FROM attendance a
+                        INNER JOIN library_users lu
+                            ON a.user_id = lu.user_id
+                        ORDER BY
+                            a.attendance_date DESC;";
+
+                    break;
+
+                case "Book Requests":
+
+                    query = @"
+                        SELECT
+                            lu.student_faculty_id
+                                AS requested_by_id,
+                            CONCAT(
+                                lu.first_name,
+                                ' ',
+                                lu.middle_name,
+                                ' ',
+                                lu.last_name
+                            ) AS requested_by,
+                            br.book_title,
+                            br.authors,
+                            br.copyright_year,
+                            br.quantity,
+                            br.subject_course_code,
+                            br.material_type,
+                            br.request_date,
+                            br.status
+                        FROM book_requests br
+                        INNER JOIN library_users lu
+                            ON br.requested_by = lu.user_id
+                        ORDER BY
+                            br.request_date DESC;";
+
+                    break;
+
+                default:
+
+                    throw new InvalidOperationException(
+                        "Unknown report type.");
+            }
+
+            DataTable table = new DataTable();
+
+            using MySqlConnection connection =
+                Database.GetConnection();
+
+            connection.Open();
+
+            using MySqlCommand command =
+                new MySqlCommand(
+                    query,
+                    connection);
+
+            using MySqlDataAdapter adapter =
+                new MySqlDataAdapter(command);
+
+            adapter.Fill(table);
+
+            return table;
+        }
+
+        private string CreatePdfReport(
+            string reportType,
+            DataTable data)
+        {
+            string reportsFolder =
+                Path.Combine(
+                    Environment.GetFolderPath(
+                        Environment.SpecialFolder.MyDocuments),
+                    "RFID Library Reports");
+
+            Directory.CreateDirectory(
+                reportsFolder);
+
+            string safeReportName =
+                reportType
+                    .Replace("/", "-")
+                    .Replace("\\", "-")
+                    .Replace(" ", "_");
+
+            string fileName =
+                $"{safeReportName}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+
+            string filePath =
+                Path.Combine(
+                    reportsFolder,
+                    fileName);
+
+            PdfDocument document =
+                new PdfDocument();
+
+            document.Info.Title =
+                $"RFID Library - {reportType}";
+
+            PdfPage page =
+                document.AddPage();
+
+            page.Orientation =
+                PdfSharpCore.PageOrientation.Landscape;
+
+            XGraphics graphics =
+                XGraphics.FromPdfPage(page);
+
+            XFont titleFont =
+                new XFont(
+                    "Arial",
+                    16,
+                    XFontStyle.Bold);
+
+            XFont headerFont =
+                new XFont(
+                    "Arial",
+                    8,
+                    XFontStyle.Bold);
+
+            XFont bodyFont =
+                new XFont(
+                    "Arial",
+                    7,
+                    XFontStyle.Regular);
+
+            graphics.DrawString(
+                "RFID LIBRARY MANAGEMENT SYSTEM",
+                titleFont,
+                XBrushes.Black,
+                new XRect(
+                    40,
+                    25,
+                    page.Width - 80,
+                    25),
+                XStringFormats.Center);
+
+            graphics.DrawString(
+                reportType,
+                headerFont,
+                XBrushes.Black,
+                new XRect(
+                    40,
+                    50,
+                    page.Width - 80,
+                    20),
+                XStringFormats.Center);
+
+            graphics.DrawString(
+                "Generated: " +
+                DateTime.Now.ToString(
+                    "yyyy-MM-dd HH:mm:ss"),
+                bodyFont,
+                XBrushes.Black,
+                40,
+                85);
+
+            double left = 40;
+            double top = 110;
+
+            double availableWidth =
+                page.Width - 80;
+
+            int columnCount =
+                Math.Max(1, data.Columns.Count);
+
+            double columnWidth =
+                availableWidth / columnCount;
+
+            double rowHeight = 25;
+
+            // Header
+            for (int column = 0;
+                 column < data.Columns.Count;
+                 column++)
+            {
+                string header =
+                    data.Columns[column].ColumnName;
+
+                graphics.DrawRectangle(
+                    XBrushes.LightGray,
+                    left + column * columnWidth,
+                    top,
+                    columnWidth,
+                    rowHeight);
+
+                graphics.DrawString(
+                    header,
+                    headerFont,
+                    XBrushes.Black,
+                    new XRect(
+                        left + column * columnWidth + 2,
+                        top + 5,
+                        columnWidth - 4,
+                        rowHeight),
+                    XStringFormats.TopLeft);
+            }
+
+            double currentY =
+                top + rowHeight;
+
+            foreach (DataRow row in data.Rows)
+            {
+                if (currentY + rowHeight >
+                    page.Height - 40)
+                {
+                    page = document.AddPage();
+
+                    page.Orientation =
+                        PdfSharpCore.PageOrientation.Landscape;
+
+                    graphics =
+                        XGraphics.FromPdfPage(page);
+
+                    currentY = 40;
+
+                    for (int column = 0;
+                         column < data.Columns.Count;
+                         column++)
+                    {
+                        string header =
+                            data.Columns[column].ColumnName;
+
+                        graphics.DrawRectangle(
+                            XBrushes.LightGray,
+                            left + column * columnWidth,
+                            currentY,
+                            columnWidth,
+                            rowHeight);
+
+                        graphics.DrawString(
+                            header,
+                            headerFont,
+                            XBrushes.Black,
+                            new XRect(
+                                left + column * columnWidth + 2,
+                                currentY + 5,
+                                columnWidth - 4,
+                                rowHeight),
+                            XStringFormats.TopLeft);
+                    }
+
+                    currentY += rowHeight;
+                }
+
+                for (int column = 0;
+                     column < data.Columns.Count;
+                     column++)
+                {
+                    string value =
+                        row[column]?.ToString() ?? "";
+
+                    if (value.Length > 30)
+                    {
+                        value =
+                            value.Substring(0, 27) + "...";
+                    }
+
+                    graphics.DrawString(
+                        value,
+                        bodyFont,
+                        XBrushes.Black,
+                        new XRect(
+                            left + column * columnWidth + 2,
+                            currentY + 5,
+                            columnWidth - 4,
+                            rowHeight),
+                        XStringFormats.TopLeft);
+                }
+
+                currentY += rowHeight;
+            }
+
+            document.Save(filePath);
+
+            return filePath;
+        }
+
+        private void OpenPdf(
+            string filePath)
+        {
+            try
+            {
+                Process.Start(
+                    new ProcessStartInfo
+                    {
+                        FileName = filePath,
+                        UseShellExecute = true
+                    });
+            }
+            catch
+            {
+                // The PDF was created successfully.
+                // Opening it automatically may not be
+                // supported on every environment.
+            }
+        }
+
+        private void CloseButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            Close();
+        }
+    }
+}
