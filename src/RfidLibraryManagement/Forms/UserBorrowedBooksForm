@@ -1,0 +1,327 @@
+using System;
+using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using RfidLibraryManagement.Data;
+
+namespace RfidLibraryManagement.Forms
+{
+    public class UserBorrowedBooksForm : Form
+    {
+        private readonly string borrowerId;
+
+        private DataGridView borrowedBooksGrid = null!;
+        private Button loadButton = null!;
+        private Button closeButton = null!;
+
+        public UserBorrowedBooksForm(string borrowerId)
+        {
+            this.borrowerId = borrowerId;
+
+            InitializeForm();
+            LoadBorrowedBooks();
+        }
+
+        private void InitializeForm()
+        {
+            Text = "My Borrowed Books";
+
+            StartPosition =
+                FormStartPosition.CenterScreen;
+
+            Size =
+                new Size(1050, 600);
+
+            MinimumSize =
+                new Size(850, 500);
+
+            // =====================================================
+            // TITLE
+            // =====================================================
+
+            Label titleLabel = new Label
+            {
+                Text = "MY BORROWED BOOKS",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+
+                Location =
+                    new Point(390, 25)
+            };
+
+            // =====================================================
+            // USER ID
+            // =====================================================
+
+            Label userLabel = new Label
+            {
+                Text =
+                    $"Borrower ID: {borrowerId}",
+
+                AutoSize = true,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10),
+
+                Location =
+                    new Point(30, 80)
+            };
+
+            // =====================================================
+            // DATA GRID
+            // =====================================================
+
+            borrowedBooksGrid = new DataGridView
+            {
+                Location =
+                    new Point(30, 120),
+
+                Size =
+                    new Size(970, 360),
+
+                Anchor =
+                    AnchorStyles.Top |
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left |
+                    AnchorStyles.Right,
+
+                AllowUserToAddRows = false,
+
+                AllowUserToDeleteRows = false,
+
+                ReadOnly = true,
+
+                SelectionMode =
+                    DataGridViewSelectionMode.FullRowSelect,
+
+                MultiSelect = false,
+
+                AutoGenerateColumns = true,
+
+                AutoSizeColumnsMode =
+                    DataGridViewAutoSizeColumnsMode.DisplayedCells
+            };
+
+            // =====================================================
+            // LOAD BUTTON
+            // =====================================================
+
+            loadButton = new Button
+            {
+                Text = "REFRESH",
+
+                Location =
+                    new Point(30, 500),
+
+                Size =
+                    new Size(120, 40),
+
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            loadButton.Click +=
+                LoadButton_Click;
+
+            // =====================================================
+            // CLOSE BUTTON
+            // =====================================================
+
+            closeButton = new Button
+            {
+                Text = "CLOSE",
+
+                Location =
+                    new Point(880, 500),
+
+                Size =
+                    new Size(120, 40),
+
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Right,
+
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+            closeButton.Click +=
+                CloseButton_Click;
+
+            // =====================================================
+            // ADD CONTROLS
+            // =====================================================
+
+            Controls.Add(titleLabel);
+            Controls.Add(userLabel);
+            Controls.Add(borrowedBooksGrid);
+            Controls.Add(loadButton);
+            Controls.Add(closeButton);
+        }
+
+        // =========================================================
+        // LOAD BORROWED BOOKS
+        // =========================================================
+
+        private void LoadBorrowedBooks()
+        {
+            try
+            {
+                string query = @"
+                    SELECT
+                        b.accession_number,
+                        b.call_number,
+                        b.title AS book_title,
+                        b.author,
+                        b.category,
+                        bt.issued_date,
+                        bt.due_date,
+                        CASE
+                            WHEN CURRENT_DATE > DATE(bt.due_date)
+                            THEN DATEDIFF(
+                                CURRENT_DATE,
+                                DATE(bt.due_date)
+                            )
+                            ELSE 0
+                        END AS days_overdue,
+                        CASE
+                            WHEN CURRENT_DATE > DATE(bt.due_date)
+                            THEN DATEDIFF(
+                                CURRENT_DATE,
+                                DATE(bt.due_date)
+                            ) * 20
+                            ELSE 0
+                        END AS current_fine,
+                        bt.status,
+                        bt.remarks
+                    FROM borrow_transactions bt
+                    INNER JOIN library_users lu
+                        ON bt.user_id = lu.user_id
+                    INNER JOIN books b
+                        ON bt.book_id = b.book_id
+                    WHERE lu.student_faculty_id =
+                        @borrowerId
+                      AND bt.status IN
+                        ('BORROWED', 'OVERDUE')
+                    ORDER BY
+                        bt.due_date ASC;";
+
+                DataTable table =
+                    new DataTable();
+
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+                using MySqlCommand command =
+                    new MySqlCommand(
+                        query,
+                        connection);
+
+                command.Parameters.AddWithValue(
+                    "@borrowerId",
+                    borrowerId);
+
+                using MySqlDataAdapter adapter =
+                    new MySqlDataAdapter(command);
+
+                adapter.Fill(table);
+
+                borrowedBooksGrid.DataSource =
+                    table;
+
+                FormatGrid();
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Unable to load borrowed books.\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred.\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        // FORMAT GRID
+        // =========================================================
+
+        private void FormatGrid()
+        {
+            if (borrowedBooksGrid.Columns.Contains(
+                "current_fine"))
+            {
+                borrowedBooksGrid.Columns[
+                    "current_fine"
+                ].DefaultCellStyle.Format =
+                    "₱#,##0.00";
+            }
+
+            if (borrowedBooksGrid.Columns.Contains(
+                "issued_date"))
+            {
+                borrowedBooksGrid.Columns[
+                    "issued_date"
+                ].DefaultCellStyle.Format =
+                    "yyyy-MM-dd";
+            }
+
+            if (borrowedBooksGrid.Columns.Contains(
+                "due_date"))
+            {
+                borrowedBooksGrid.Columns[
+                    "due_date"
+                ].DefaultCellStyle.Format =
+                    "yyyy-MM-dd";
+            }
+        }
+
+        // =========================================================
+        // REFRESH
+        // =========================================================
+
+        private void LoadButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            LoadBorrowedBooks();
+        }
+
+        // =========================================================
+        // CLOSE
+        // =========================================================
+
+        private void CloseButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            Close();
+        }
+    }
+}
