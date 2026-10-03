@@ -6,10 +6,11 @@ namespace RfidLibraryManagement.Forms
 {
     public class UserDashboardForm : Form
     {
-        private string borrowerId;
-        private string borrowerName;
+        private readonly string borrowerId;
+        private readonly string borrowerName;
 
         private Label welcomeLabel = null!;
+
         private Button searchButton = null!;
         private Button borrowedBooksButton = null!;
         private Button returnedBooksButton = null!;
@@ -103,7 +104,7 @@ namespace RfidLibraryManagement.Forms
             };
 
             // =====================================================
-            // SEARCH
+            // SEARCH BOOKS
             // =====================================================
 
             searchButton = new Button
@@ -278,12 +279,11 @@ namespace RfidLibraryManagement.Forms
             object? sender,
             EventArgs e)
         {
-            MessageBox.Show(
-                "Borrowed Books module for the current user " +
-                "will be connected next.",
-                "Borrowed Books",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            using UserBorrowedBooksForm form =
+                new UserBorrowedBooksForm(
+                    borrowerId);
+
+            form.ShowDialog();
         }
 
         // =========================================================
@@ -294,12 +294,11 @@ namespace RfidLibraryManagement.Forms
             object? sender,
             EventArgs e)
         {
-            MessageBox.Show(
-                "Returned Books module for the current user " +
-                "will be connected next.",
-                "Returned Books",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            using UserReturnedBooksForm form =
+                new UserReturnedBooksForm(
+                    borrowerId);
+
+            form.ShowDialog();
         }
 
         // =========================================================
@@ -310,11 +309,12 @@ namespace RfidLibraryManagement.Forms
             object? sender,
             EventArgs e)
         {
-            MessageBox.Show(
-                "Book Request module will be connected next.",
-                "Book Request",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            using BookRequestForm form =
+                new BookRequestForm(
+                    borrowerId,
+                    borrowerName);
+
+            form.ShowDialog();
         }
 
         // =========================================================
@@ -326,11 +326,7 @@ namespace RfidLibraryManagement.Forms
             EventArgs e)
         {
             MessageBox.Show(
-                $"Attendance recorded for:\n\n" +
-                $"{borrowerName}\n" +
-                $"ID: {borrowerId}\n\n" +
-                "The attendance database transaction " +
-                "will be connected next.",
+                "Attendance module will be connected next.",
                 "Attendance",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
