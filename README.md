@@ -454,34 +454,23 @@ Current limitations may include:
 
 ### Authentication
 
-- Administrator login
-- Librarian accounts
-- Role-based access control
 - Secure password hashing
 
 ###  RFID
 
-- Automatic RFID reader detection
 - RFID registration
 - RFID card management
 - Improved RFID transaction handling
 
 ###  Library Management
 
-- Advanced book search
 - Book reservation
-- Due-date monitoring
-- Overdue detection
-- Fine calculation
 - Book availability notifications
 
 ###  Reporting
 
 - PDF reports
 - Excel export
-- Date-range filtering
-- Attendance reports
-- Inventory reports
 - Borrowing reports
 - Returning reports
 - Statistical dashboards
