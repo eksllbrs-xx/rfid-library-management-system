@@ -142,9 +142,16 @@ namespace RfidLibraryManagement.Forms
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
 
-                    Hide();
+                   Hide();
 
-                    // Admin dashboard will be connected here next.
+using AdminDashboardForm dashboard =
+    new AdminDashboardForm();
+
+dashboard.ShowDialog();
+
+Close();
+
+                    
                 }
                 else
                 {
