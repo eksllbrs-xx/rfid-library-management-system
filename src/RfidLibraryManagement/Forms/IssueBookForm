@@ -1,0 +1,1118 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using RfidLibraryManagement.Data;
+
+namespace RfidLibraryManagement.Forms
+{
+    public class IssueBookForm : Form
+    {
+        // ==========================================
+        // BORROWER CONTROLS
+        // ==========================================
+
+        private TextBox borrowerIdTextBox = null!;
+        private TextBox fullNameTextBox = null!;
+        private TextBox departmentTextBox = null!;
+        private TextBox courseTextBox = null!;
+
+        private Button findBorrowerButton = null!;
+
+
+        // ==========================================
+        // BOOK CONTROLS
+        // ==========================================
+
+        private TextBox accessionNumberTextBox = null!;
+        private TextBox callNumberTextBox = null!;
+        private TextBox bookTitleTextBox = null!;
+        private TextBox authorTextBox = null!;
+        private TextBox copiesTextBox = null!;
+
+        private Button findBookButton = null!;
+
+
+        // ==========================================
+        // TRANSACTION CONTROLS
+        // ==========================================
+
+        private DateTimePicker issueDatePicker = null!;
+        private DateTimePicker dueDatePicker = null!;
+
+        private TextBox remarksTextBox = null!;
+
+        private Button issueBookButton = null!;
+        private Button clearButton = null!;
+        private Button closeButton = null!;
+
+
+        // ==========================================
+        // CONSTRUCTOR
+        // ==========================================
+
+        public IssueBookForm()
+        {
+            InitializeForm();
+        }
+
+
+        // ==========================================
+        // INITIALIZE FORM
+        // ==========================================
+
+        private void InitializeForm()
+        {
+            Text = "Issue Book";
+            StartPosition = FormStartPosition.CenterScreen;
+
+            Size = new Size(900, 700);
+
+            MinimumSize = new Size(800, 600);
+
+
+            // ==========================================
+            // TITLE
+            // ==========================================
+
+            Label titleLabel = new Label
+            {
+                Text = "ISSUE BOOK",
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+
+                Location = new Point(30, 25)
+            };
+
+            Controls.Add(titleLabel);
+
+
+            // ==========================================
+            // BORROWER SECTION
+            // ==========================================
+
+            Label borrowerSectionLabel = new Label
+            {
+                Text = "BORROWER INFORMATION",
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    13,
+                    FontStyle.Bold),
+
+                Location = new Point(30, 75)
+            };
+
+            Controls.Add(borrowerSectionLabel);
+
+
+            AddLabel(
+                "ID Number:",
+                30,
+                120);
+
+            borrowerIdTextBox =
+                AddTextBox(
+                    150,
+                    115,
+                    230);
+
+
+            findBorrowerButton = new Button
+            {
+                Text = "FIND BORROWER",
+                Location = new Point(395, 114),
+                Size = new Size(140, 32)
+            };
+
+            findBorrowerButton.Click +=
+                FindBorrowerButton_Click;
+
+            Controls.Add(
+                findBorrowerButton);
+
+
+            AddLabel(
+                "Full Name:",
+                30,
+                165);
+
+            fullNameTextBox =
+                AddTextBox(
+                    150,
+                    160,
+                    385);
+
+            fullNameTextBox.ReadOnly = true;
+
+
+            AddLabel(
+                "Department:",
+                30,
+                210);
+
+            departmentTextBox =
+                AddTextBox(
+                    150,
+                    205,
+                    385);
+
+            departmentTextBox.ReadOnly = true;
+
+
+            AddLabel(
+                "Course:",
+                30,
+                255);
+
+            courseTextBox =
+                AddTextBox(
+                    150,
+                    250,
+                    385);
+
+            courseTextBox.ReadOnly = true;
+
+
+            // ==========================================
+            // BOOK SECTION
+            // ==========================================
+
+            Label bookSectionLabel = new Label
+            {
+                Text = "BOOK INFORMATION",
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    13,
+                    FontStyle.Bold),
+
+                Location = new Point(30, 305)
+            };
+
+            Controls.Add(bookSectionLabel);
+
+
+            AddLabel(
+                "Accession No.:",
+                30,
+                350);
+
+            accessionNumberTextBox =
+                AddTextBox(
+                    150,
+                    345,
+                    230);
+
+
+            findBookButton = new Button
+            {
+                Text = "FIND BOOK",
+                Location = new Point(395, 344),
+                Size = new Size(140, 32)
+            };
+
+            findBookButton.Click +=
+                FindBookButton_Click;
+
+            Controls.Add(
+                findBookButton);
+
+
+            AddLabel(
+                "Call Number:",
+                30,
+                395);
+
+            callNumberTextBox =
+                AddTextBox(
+                    150,
+                    390,
+                    385);
+
+            callNumberTextBox.ReadOnly = true;
+
+
+            AddLabel(
+                "Book Title:",
+                30,
+                440);
+
+            bookTitleTextBox =
+                AddTextBox(
+                    150,
+                    435,
+                    385);
+
+            bookTitleTextBox.ReadOnly = true;
+
+
+            AddLabel(
+                "Author:",
+                30,
+                485);
+
+            authorTextBox =
+                AddTextBox(
+                    150,
+                    480,
+                    385);
+
+            authorTextBox.ReadOnly = true;
+
+
+            AddLabel(
+                "Available Copies:",
+                30,
+                530);
+
+            copiesTextBox =
+                AddTextBox(
+                    150,
+                    525,
+                    100);
+
+            copiesTextBox.ReadOnly = true;
+
+
+            // ==========================================
+            // TRANSACTION SECTION
+            // ==========================================
+
+            Label transactionSectionLabel = new Label
+            {
+                Text = "TRANSACTION DETAILS",
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    13,
+                    FontStyle.Bold),
+
+                Location = new Point(570, 75)
+            };
+
+            Controls.Add(
+                transactionSectionLabel);
+
+
+            AddLabel(
+                "Issue Date:",
+                570,
+                125);
+
+            issueDatePicker =
+                new DateTimePicker
+                {
+                    Location =
+                        new Point(
+                            680,
+                            120),
+
+                    Width = 170,
+
+                    Format =
+                        DateTimePickerFormat.Short
+                };
+
+            Controls.Add(
+                issueDatePicker);
+
+
+            AddLabel(
+                "Due Date:",
+                570,
+                175);
+
+            dueDatePicker =
+                new DateTimePicker
+                {
+                    Location =
+                        new Point(
+                            680,
+                            170),
+
+                    Width = 170,
+
+                    Format =
+                        DateTimePickerFormat.Short,
+
+                    Value =
+                        DateTime.Today.AddDays(7)
+                };
+
+            Controls.Add(
+                dueDatePicker);
+
+
+            AddLabel(
+                "Remarks:",
+                570,
+                225);
+
+            remarksTextBox =
+                new TextBox
+                {
+                    Location =
+                        new Point(
+                            680,
+                            220),
+
+                    Width = 170,
+
+                    Height = 100,
+
+                    Multiline = true,
+
+                    ScrollBars =
+                        ScrollBars.Vertical
+                };
+
+            Controls.Add(
+                remarksTextBox);
+
+
+            // ==========================================
+            // BUTTONS
+            // ==========================================
+
+            issueBookButton = new Button
+            {
+                Text = "ISSUE BOOK",
+                Location = new Point(570, 350),
+                Size = new Size(130, 45),
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold)
+            };
+
+
+            clearButton = new Button
+            {
+                Text = "CLEAR",
+                Location = new Point(710, 350),
+                Size = new Size(110, 45)
+            };
+
+
+            closeButton = new Button
+            {
+                Text = "CLOSE",
+                Location = new Point(640, 410),
+                Size = new Size(110, 40)
+            };
+
+
+            issueBookButton.Click +=
+                IssueBookButton_Click;
+
+            clearButton.Click +=
+                ClearButton_Click;
+
+            closeButton.Click +=
+                CloseButton_Click;
+
+
+            Controls.Add(
+                issueBookButton);
+
+            Controls.Add(
+                clearButton);
+
+            Controls.Add(
+                closeButton);
+        }
+
+
+        // ==========================================
+        // ADD LABEL
+        // ==========================================
+
+        private void AddLabel(
+            string text,
+            int x,
+            int y)
+        {
+            Controls.Add(
+                new Label
+                {
+                    Text = text,
+
+                    AutoSize = true,
+
+                    Location =
+                        new Point(
+                            x,
+                            y + 4),
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            9)
+                });
+        }
+
+
+        // ==========================================
+        // ADD TEXTBOX
+        // ==========================================
+
+        private TextBox AddTextBox(
+            int x,
+            int y,
+            int width)
+        {
+            TextBox textBox =
+                new TextBox
+                {
+                    Location =
+                        new Point(
+                            x,
+                            y),
+
+                    Width = width
+                };
+
+            Controls.Add(
+                textBox);
+
+            return textBox;
+        }
+
+
+        // ==========================================
+        // FIND BORROWER
+        // ==========================================
+
+        private void FindBorrowerButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            string borrowerId =
+                borrowerIdTextBox.Text.Trim();
+
+
+            if (string.IsNullOrWhiteSpace(
+                borrowerId))
+            {
+                MessageBox.Show(
+                    "Please enter the student/faculty ID number.",
+                    "Borrower Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                borrowerIdTextBox.Focus();
+
+                return;
+            }
+
+
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+
+                string query = @"
+                    SELECT
+                        student_faculty_id,
+                        first_name,
+                        middle_name,
+                        last_name,
+                        department,
+                        course
+                    FROM library_users
+                    WHERE student_faculty_id =
+                        @borrowerId
+                    AND status = 'ACTIVE'
+                    LIMIT 1;";
+
+
+                using MySqlCommand command =
+                    new MySqlCommand(
+                        query,
+                        connection);
+
+
+                command.Parameters.AddWithValue(
+                    "@borrowerId",
+                    borrowerId);
+
+
+                using MySqlDataReader reader =
+                    command.ExecuteReader();
+
+
+                if (reader.Read())
+                {
+                    string firstName =
+                        reader["first_name"]
+                            .ToString() ?? "";
+
+                    string middleName =
+                        reader["middle_name"]
+                            .ToString() ?? "";
+
+                    string lastName =
+                        reader["last_name"]
+                            .ToString() ?? "";
+
+
+                    fullNameTextBox.Text =
+                        $"{firstName} {middleName} {lastName}"
+                            .Replace(
+                                "  ",
+                                " ")
+                            .Trim();
+
+
+                    departmentTextBox.Text =
+                        reader["department"]
+                            .ToString() ?? "";
+
+
+                    courseTextBox.Text =
+                        reader["course"]
+                            .ToString() ?? "";
+                }
+                else
+                {
+                    ClearBorrowerFields();
+
+                    MessageBox.Show(
+                        "Borrower not found or inactive.",
+                        "Borrower Not Found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to find the borrower.\n\n" +
+                    $"Details: {ex.Message}",
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+
+        // ==========================================
+        // FIND BOOK
+        // ==========================================
+
+        private void FindBookButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            string accessionNumber =
+                accessionNumberTextBox.Text.Trim();
+
+
+            if (string.IsNullOrWhiteSpace(
+                accessionNumber))
+            {
+                MessageBox.Show(
+                    "Please enter the accession number.",
+                    "Book Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                accessionNumberTextBox.Focus();
+
+                return;
+            }
+
+
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+
+                string query = @"
+                    SELECT
+                        accession_number,
+                        call_number,
+                        title,
+                        author,
+                        available_copies
+                    FROM books
+                    WHERE accession_number =
+                        @accessionNumber
+                    LIMIT 1;";
+
+
+                using MySqlCommand command =
+                    new MySqlCommand(
+                        query,
+                        connection);
+
+
+                command.Parameters.AddWithValue(
+                    "@accessionNumber",
+                    accessionNumber);
+
+
+                using MySqlDataReader reader =
+                    command.ExecuteReader();
+
+
+                if (reader.Read())
+                {
+                    callNumberTextBox.Text =
+                        reader["call_number"]
+                            .ToString() ?? "";
+
+
+                    bookTitleTextBox.Text =
+                        reader["title"]
+                            .ToString() ?? "";
+
+
+                    authorTextBox.Text =
+                        reader["author"]
+                            .ToString() ?? "";
+
+
+                    copiesTextBox.Text =
+                        reader["available_copies"]
+                            .ToString() ?? "0";
+                }
+                else
+                {
+                    ClearBookFields();
+
+                    MessageBox.Show(
+                        "Book not found.",
+                        "Book Not Found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to find the book.\n\n" +
+                    $"Details: {ex.Message}",
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+
+        // ==========================================
+        // ISSUE BOOK
+        // ==========================================
+
+        private void IssueBookButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            string borrowerId =
+                borrowerIdTextBox.Text.Trim();
+
+            string accessionNumber =
+                accessionNumberTextBox.Text.Trim();
+
+
+            // ------------------------------------------
+            // VALIDATE BORROWER
+            // ------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(
+                borrowerId) ||
+                string.IsNullOrWhiteSpace(
+                    fullNameTextBox.Text))
+            {
+                MessageBox.Show(
+                    "Please find and select a valid borrower.",
+                    "Borrower Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
+
+            // ------------------------------------------
+            // VALIDATE BOOK
+            // ------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(
+                accessionNumber) ||
+                string.IsNullOrWhiteSpace(
+                    bookTitleTextBox.Text))
+            {
+                MessageBox.Show(
+                    "Please find a valid book.",
+                    "Book Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
+
+            // ------------------------------------------
+            // VALIDATE DATES
+            // ------------------------------------------
+
+            if (dueDatePicker.Value.Date <
+                issueDatePicker.Value.Date)
+            {
+                MessageBox.Show(
+                    "Due Date cannot be earlier than Issue Date.",
+                    "Invalid Date",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
+
+            try
+            {
+                using MySqlConnection connection =
+                    Database.GetConnection();
+
+                connection.Open();
+
+
+                using MySqlTransaction transaction =
+                    connection.BeginTransaction();
+
+
+                try
+                {
+                    // ==========================================
+                    // GET BORROWER ID
+                    // ==========================================
+
+                    string borrowerQuery = @"
+                        SELECT user_id
+                        FROM library_users
+                        WHERE student_faculty_id =
+                            @borrowerId
+                        AND status = 'ACTIVE'
+                        LIMIT 1;";
+
+
+                    int userId;
+
+
+                    using (
+                        MySqlCommand borrowerCommand =
+                            new MySqlCommand(
+                                borrowerQuery,
+                                connection,
+                                transaction))
+                    {
+                        borrowerCommand.Parameters.AddWithValue(
+                            "@borrowerId",
+                            borrowerId);
+
+
+                        object? result =
+                            borrowerCommand.ExecuteScalar();
+
+
+                        if (result == null)
+                        {
+                            throw new Exception(
+                                "Borrower could not be found.");
+                        }
+
+
+                        userId =
+                            Convert.ToInt32(result);
+                    }
+
+
+                    // ==========================================
+                    // GET BOOK ID AND AVAILABLE COPIES
+                    // ==========================================
+
+                    string bookQuery = @"
+                        SELECT
+                            book_id,
+                            available_copies
+                        FROM books
+                        WHERE accession_number =
+                            @accessionNumber
+                        FOR UPDATE;";
+
+
+                    int bookId;
+                    int availableCopies;
+
+
+                    using (
+                        MySqlCommand bookCommand =
+                            new MySqlCommand(
+                                bookQuery,
+                                connection,
+                                transaction))
+                    {
+                        bookCommand.Parameters.AddWithValue(
+                            "@accessionNumber",
+                            accessionNumber);
+
+
+                        using MySqlDataReader reader =
+                            bookCommand.ExecuteReader();
+
+
+                        if (!reader.Read())
+                        {
+                            reader.Close();
+
+                            throw new Exception(
+                                "Book could not be found.");
+                        }
+
+
+                        bookId =
+                            Convert.ToInt32(
+                                reader["book_id"]);
+
+
+                        availableCopies =
+                            Convert.ToInt32(
+                                reader["available_copies"]);
+
+
+                        reader.Close();
+                    }
+
+
+                    // ==========================================
+                    // CHECK AVAILABLE COPIES
+                    // ==========================================
+
+                    if (availableCopies <= 0)
+                    {
+                        throw new Exception(
+                            "No available copies of this book.");
+                    }
+
+
+                    // ==========================================
+                    // INSERT BORROW TRANSACTION
+                    // ==========================================
+
+                    string insertQuery = @"
+                        INSERT INTO borrow_transactions
+                        (
+                            user_id,
+                            book_id,
+                            issued_date,
+                            due_date,
+                            status,
+                            remarks
+                        )
+                        VALUES
+                        (
+                            @userId,
+                            @bookId,
+                            @issuedDate,
+                            @dueDate,
+                            'BORROWED',
+                            @remarks
+                        );";
+
+
+                    using (
+                        MySqlCommand insertCommand =
+                            new MySqlCommand(
+                                insertQuery,
+                                connection,
+                                transaction))
+                    {
+                        insertCommand.Parameters.AddWithValue(
+                            "@userId",
+                            userId);
+
+
+                        insertCommand.Parameters.AddWithValue(
+                            "@bookId",
+                            bookId);
+
+
+                        insertCommand.Parameters.AddWithValue(
+                            "@issuedDate",
+                            issueDatePicker.Value.Date);
+
+
+                        insertCommand.Parameters.AddWithValue(
+                            "@dueDate",
+                            dueDatePicker.Value.Date);
+
+
+                        insertCommand.Parameters.AddWithValue(
+                            "@remarks",
+                            remarksTextBox.Text.Trim());
+
+
+                        insertCommand.ExecuteNonQuery();
+                    }
+
+
+                    // ==========================================
+                    // DECREASE AVAILABLE COPIES
+                    // ==========================================
+
+                    string updateBookQuery = @"
+                        UPDATE books
+                        SET
+                            available_copies =
+                                available_copies - 1,
+                            status =
+                                CASE
+                                    WHEN available_copies - 1 <= 0
+                                    THEN 'BORROWED'
+                                    ELSE 'AVAILABLE'
+                                END
+                        WHERE book_id = @bookId
+                        AND available_copies > 0;";
+
+
+                    using (
+                        MySqlCommand updateCommand =
+                            new MySqlCommand(
+                                updateBookQuery,
+                                connection,
+                                transaction))
+                    {
+                        updateCommand.Parameters.AddWithValue(
+                            "@bookId",
+                            bookId);
+
+
+                        int affectedRows =
+                            updateCommand.ExecuteNonQuery();
+
+
+                        if (affectedRows == 0)
+                        {
+                            throw new Exception(
+                                "Unable to update book availability.");
+                        }
+                    }
+
+
+                    // ==========================================
+                    // COMMIT
+                    // ==========================================
+
+                    transaction.Commit();
+
+
+                    MessageBox.Show(
+                        "Book successfully issued.",
+                        "Issue Book",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+
+                    ClearForm();
+                }
+                catch
+                {
+                    transaction.Rollback();
+
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to issue the book.\n\n" +
+                    $"Details: {ex.Message}",
+                    "Issue Book Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+
+        // ==========================================
+        // CLEAR BORROWER FIELDS
+        // ==========================================
+
+        private void ClearBorrowerFields()
+        {
+            fullNameTextBox.Clear();
+            departmentTextBox.Clear();
+            courseTextBox.Clear();
+        }
+
+
+        // ==========================================
+        // CLEAR BOOK FIELDS
+        // ==========================================
+
+        private void ClearBookFields()
+        {
+            callNumberTextBox.Clear();
+            bookTitleTextBox.Clear();
+            authorTextBox.Clear();
+            copiesTextBox.Clear();
+        }
+
+
+        // ==========================================
+        // CLEAR FORM
+        // ==========================================
+
+        private void ClearButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            ClearForm();
+        }
+
+
+        private void ClearForm()
+        {
+            borrowerIdTextBox.Clear();
+
+            ClearBorrowerFields();
+
+            accessionNumberTextBox.Clear();
+
+            ClearBookFields();
+
+            issueDatePicker.Value =
+                DateTime.Today;
+
+            dueDatePicker.Value =
+                DateTime.Today.AddDays(7);
+
+            remarksTextBox.Clear();
+
+            borrowerIdTextBox.Focus();
+        }
+
+
+        // ==========================================
+        // CLOSE
+        // ==========================================
+
+        private void CloseButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            Close();
+        }
+    }
+}
