@@ -1,0 +1,516 @@
+using System;
+using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using RfidLibraryManagement.Data;
+
+namespace RfidLibraryManagement.Forms
+{
+    public class RecordsForm : Form
+    {
+        private TabControl recordsTabControl = null!;
+
+        private DataGridView attendanceGrid = null!;
+        private DataGridView borrowedGrid = null!;
+        private DataGridView returnedGrid = null!;
+        private DataGridView inventoryGrid = null!;
+        private DataGridView requestGrid = null!;
+
+        private Button loadDataButton = null!;
+        private Button printPreviewButton = null!;
+        private Button closeButton = null!;
+
+        public RecordsForm()
+        {
+            InitializeForm();
+        }
+
+        private void InitializeForm()
+        {
+            Text = "Library Records";
+            StartPosition = FormStartPosition.CenterScreen;
+            Size = new Size(1100, 700);
+            MinimumSize = new Size(900, 600);
+
+            Label titleLabel = new Label
+            {
+                Text = "LIBRARY RECORDS",
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+                Location = new Point(430, 20)
+            };
+
+            recordsTabControl = new TabControl
+            {
+                Location = new Point(20, 70),
+                Size = new Size(1040, 500),
+                Anchor =
+                    AnchorStyles.Top |
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left |
+                    AnchorStyles.Right
+            };
+
+            // =====================================================
+            // ATTENDANCE TAB
+            // =====================================================
+
+            TabPage attendanceTab = new TabPage
+            {
+                Text = "ATTENDANCE"
+            };
+
+            attendanceGrid = CreateGrid();
+
+            attendanceTab.Controls.Add(attendanceGrid);
+
+            // =====================================================
+            // BORROWED BOOKS TAB
+            // =====================================================
+
+            TabPage borrowedTab = new TabPage
+            {
+                Text = "BORROWED BOOKS"
+            };
+
+            borrowedGrid = CreateGrid();
+
+            borrowedTab.Controls.Add(borrowedGrid);
+
+            // =====================================================
+            // RETURNED BOOKS TAB
+            // =====================================================
+
+            TabPage returnedTab = new TabPage
+            {
+                Text = "RETURNED BOOKS"
+            };
+
+            returnedGrid = CreateGrid();
+
+            returnedTab.Controls.Add(returnedGrid);
+
+            // =====================================================
+            // INVENTORY TAB
+            // =====================================================
+
+            TabPage inventoryTab = new TabPage
+            {
+                Text = "INVENTORY"
+            };
+
+            inventoryGrid = CreateGrid();
+
+            inventoryTab.Controls.Add(inventoryGrid);
+
+            // =====================================================
+            // BOOK REQUEST TAB
+            // =====================================================
+
+            TabPage requestTab = new TabPage
+            {
+                Text = "BOOK REQUEST"
+            };
+
+            requestGrid = CreateGrid();
+
+            requestTab.Controls.Add(requestGrid);
+
+            // =====================================================
+            // ADD TABS
+            // =====================================================
+
+            recordsTabControl.TabPages.Add(attendanceTab);
+            recordsTabControl.TabPages.Add(borrowedTab);
+            recordsTabControl.TabPages.Add(returnedTab);
+            recordsTabControl.TabPages.Add(inventoryTab);
+            recordsTabControl.TabPages.Add(requestTab);
+
+            // =====================================================
+            // LOAD DATA
+            // =====================================================
+
+            loadDataButton = new Button
+            {
+                Text = "LOAD DATA",
+                Location = new Point(20, 590),
+                Size = new Size(130, 40),
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold),
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left
+            };
+
+            loadDataButton.Click +=
+                LoadDataButton_Click;
+
+            // =====================================================
+            // PRINT PREVIEW
+            // =====================================================
+
+            printPreviewButton = new Button
+            {
+                Text = "PRINT PREVIEW",
+                Location = new Point(165, 590),
+                Size = new Size(150, 40),
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold),
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Left
+            };
+
+            printPreviewButton.Click +=
+                PrintPreviewButton_Click;
+
+            // =====================================================
+            // CLOSE
+            // =====================================================
+
+            closeButton = new Button
+            {
+                Text = "CLOSE",
+                Location = new Point(900, 590),
+                Size = new Size(130, 40),
+                Font = new Font(
+                    "Segoe UI",
+                    10,
+                    FontStyle.Bold),
+                Anchor =
+                    AnchorStyles.Bottom |
+                    AnchorStyles.Right
+            };
+
+            closeButton.Click +=
+                CloseButton_Click;
+
+            Controls.Add(titleLabel);
+            Controls.Add(recordsTabControl);
+            Controls.Add(loadDataButton);
+            Controls.Add(printPreviewButton);
+            Controls.Add(closeButton);
+        }
+
+        // =========================================================
+        // CREATE DATA GRID
+        // =========================================================
+
+        private DataGridView CreateGrid()
+        {
+            DataGridView grid = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AutoSizeColumnsMode =
+                    DataGridViewAutoSizeColumnsMode.DisplayedCells,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                SelectionMode =
+                    DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoGenerateColumns = true
+            };
+
+            return grid;
+        }
+
+        // =========================================================
+        // LOAD DATA
+        // =========================================================
+
+        private void LoadDataButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            try
+            {
+                LoadAttendance();
+                LoadBorrowedBooks();
+                LoadReturnedBooks();
+                LoadInventory();
+                LoadBookRequests();
+
+                MessageBox.Show(
+                    "Records loaded successfully.",
+                    "Load Data",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    "Database error:\n\n" +
+                    ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An unexpected error occurred:\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        // ATTENDANCE
+        // =========================================================
+
+        private void LoadAttendance()
+        {
+            string query = @"
+                SELECT
+                    a.attendance_id,
+                    lu.student_faculty_id AS borrower_id,
+                    CONCAT(
+                        lu.first_name,
+                        ' ',
+                        lu.middle_name,
+                        ' ',
+                        lu.last_name
+                    ) AS name,
+                    lu.user_type,
+                    lu.department,
+                    lu.course,
+                    a.attendance_date,
+                    a.time_in,
+                    a.time_out,
+                    a.purpose
+                FROM attendance a
+                INNER JOIN library_users lu
+                    ON a.user_id = lu.user_id
+                ORDER BY
+                    a.attendance_date DESC,
+                    a.time_in DESC;";
+
+            attendanceGrid.DataSource =
+                ExecuteQuery(query);
+        }
+
+        // =========================================================
+        // BORROWED BOOKS
+        // =========================================================
+
+        private void LoadBorrowedBooks()
+        {
+            string query = @"
+                SELECT
+                    bt.borrow_id,
+                    lu.student_faculty_id AS borrower_id,
+                    CONCAT(
+                        lu.first_name,
+                        ' ',
+                        lu.middle_name,
+                        ' ',
+                        lu.last_name
+                    ) AS borrower_name,
+                    lu.department,
+                    lu.course,
+                    b.accession_number,
+                    b.call_number,
+                    b.title AS book_title,
+                    b.author,
+                    bt.issued_date,
+                    bt.due_date,
+                    bt.status,
+                    bt.remarks
+                FROM borrow_transactions bt
+                INNER JOIN library_users lu
+                    ON bt.user_id = lu.user_id
+                INNER JOIN books b
+                    ON bt.book_id = b.book_id
+                WHERE bt.status IN
+                    ('BORROWED', 'OVERDUE')
+                ORDER BY
+                    bt.due_date ASC;";
+
+            borrowedGrid.DataSource =
+                ExecuteQuery(query);
+        }
+
+        // =========================================================
+        // RETURNED BOOKS
+        // =========================================================
+
+        private void LoadReturnedBooks()
+        {
+            string query = @"
+                SELECT
+                    rt.return_id,
+                    lu.student_faculty_id AS borrower_id,
+                    CONCAT(
+                        lu.first_name,
+                        ' ',
+                        lu.middle_name,
+                        ' ',
+                        lu.last_name
+                    ) AS borrower_name,
+                    b.accession_number,
+                    b.call_number,
+                    b.title AS book_title,
+                    b.author,
+                    bt.issued_date,
+                    bt.due_date,
+                    rt.returned_date,
+                    rt.days_overdue,
+                    rt.fine_amount,
+                    rt.remarks
+                FROM return_transactions rt
+                INNER JOIN borrow_transactions bt
+                    ON rt.borrow_id = bt.borrow_id
+                INNER JOIN library_users lu
+                    ON bt.user_id = lu.user_id
+                INNER JOIN books b
+                    ON bt.book_id = b.book_id
+                ORDER BY
+                    rt.returned_date DESC;";
+
+            returnedGrid.DataSource =
+                ExecuteQuery(query);
+        }
+
+        // =========================================================
+        // INVENTORY
+        // =========================================================
+
+        private void LoadInventory()
+        {
+            string query = @"
+                SELECT
+                    i.inventory_id,
+                    b.accession_number,
+                    b.call_number,
+                    b.title AS book_title,
+                    b.author,
+                    b.category,
+                    b.location,
+                    b.shelf_number,
+                    b.copies,
+                    b.available_copies,
+                    i.inventory_date,
+                    i.quantity_checked,
+                    i.quantity_missing,
+                    i.quantity_damaged,
+                    i.remarks
+                FROM inventory i
+                INNER JOIN books b
+                    ON i.book_id = b.book_id
+                ORDER BY
+                    i.inventory_date DESC;";
+
+            inventoryGrid.DataSource =
+                ExecuteQuery(query);
+        }
+
+        // =========================================================
+        // BOOK REQUESTS
+        // =========================================================
+
+        private void LoadBookRequests()
+        {
+            string query = @"
+                SELECT
+                    br.request_id,
+                    lu.student_faculty_id AS requested_by_id,
+                    CONCAT(
+                        lu.first_name,
+                        ' ',
+                        lu.middle_name,
+                        ' ',
+                        lu.last_name
+                    ) AS requested_by,
+                    br.book_title,
+                    br.authors,
+                    br.copyright_year,
+                    br.quantity,
+                    br.subject_course_code,
+                    br.material_type,
+                    br.available_at,
+                    br.reason,
+                    br.request_date,
+                    br.status,
+                    br.remarks
+                FROM book_requests br
+                INNER JOIN library_users lu
+                    ON br.requested_by = lu.user_id
+                ORDER BY
+                    br.request_date DESC;";
+
+            requestGrid.DataSource =
+                ExecuteQuery(query);
+        }
+
+        // =========================================================
+        // EXECUTE QUERY
+        // =========================================================
+
+        private DataTable ExecuteQuery(
+            string query)
+        {
+            DataTable table = new DataTable();
+
+            using MySqlConnection connection =
+                Database.GetConnection();
+
+            connection.Open();
+
+            using MySqlCommand command =
+                new MySqlCommand(
+                    query,
+                    connection);
+
+            using MySqlDataAdapter adapter =
+                new MySqlDataAdapter(command);
+
+            adapter.Fill(table);
+
+            return table;
+        }
+
+        // =========================================================
+        // PRINT PREVIEW
+        // =========================================================
+
+        private void PrintPreviewButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            string selectedRecordType =
+                recordsTabControl.SelectedTab?.Text
+                ?? "Records";
+
+            MessageBox.Show(
+                "Print Preview selected for:\n\n" +
+                selectedRecordType +
+                "\n\n" +
+                "The PDF reporting module will be connected next.",
+                "Print Preview",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        // =========================================================
+        // CLOSE
+        // =========================================================
+
+        private void CloseButton_Click(
+            object? sender,
+            EventArgs e)
+        {
+            Close();
+        }
+    }
+}
