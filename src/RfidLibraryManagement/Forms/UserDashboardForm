@@ -321,16 +321,15 @@ namespace RfidLibraryManagement.Forms
         // ATTENDANCE
         // =========================================================
 
-        private void AttendanceButton_Click(
-            object? sender,
-            EventArgs e)
-        {
-            MessageBox.Show(
-                "Attendance module will be connected next.",
-                "Attendance",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-        }
+    private void AttendanceButton_Click(
+    object? sender,
+    EventArgs e)
+{
+    using AttendanceForm form =
+        new AttendanceForm(borrowerId);
+
+    form.ShowDialog();
+}
 
         // =========================================================
         // LOGOUT
