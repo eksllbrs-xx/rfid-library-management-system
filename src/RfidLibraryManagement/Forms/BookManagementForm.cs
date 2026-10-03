@@ -26,6 +26,8 @@ namespace RfidLibraryManagement.Forms
         private DateTimePicker registrationDatePicker = null!;
 
         private Button saveButton = null!;
+        private Button updateButton = null!;
+        private Button deleteButton = null!;
         private Button clearButton = null!;
         private Button closeButton = null!;
 
@@ -125,45 +127,65 @@ namespace RfidLibraryManagement.Forms
             Controls.Add(abstractTextBox);
 
             saveButton = new Button
-            {
-                Text = "SAVE BOOK",
-                Location = new Point(30, 405),
-                Size = new Size(130, 45)
-            };
+{
+    Text = "SAVE BOOK",
+    Location = new Point(30, 405),
+    Size = new Size(120, 45)
+};
 
-            clearButton = new Button
-            {
-                Text = "CLEAR",
-                Location = new Point(175, 405),
-                Size = new Size(130, 45)
-            };
+updateButton = new Button
+{
+    Text = "UPDATE",
+    Location = new Point(160, 405),
+    Size = new Size(120, 45)
+};
 
-            closeButton = new Button
-            {
-                Text = "CLOSE",
-                Location = new Point(320, 405),
-                Size = new Size(130, 45)
-            };
+deleteButton = new Button
+{
+    Text = "DELETE",
+    Location = new Point(290, 405),
+    Size = new Size(120, 45)
+};
+
+clearButton = new Button
+{
+    Text = "CLEAR",
+    Location = new Point(420, 405),
+    Size = new Size(120, 45)
+};
+
+closeButton = new Button
+{
+    Text = "CLOSE",
+    Location = new Point(550, 405),
+    Size = new Size(120, 45)
+};
 
             saveButton.Click += SaveButton_Click;
+            updateButton.Click += UpdateButton_Click;
+            deleteButton.Click += DeleteButton_Click;
             clearButton.Click += ClearButton_Click;
             closeButton.Click += CloseButton_Click;
 
             Controls.Add(saveButton);
+            Controls.Add(updateButton);
+            Controls.Add(deleteButton);
             Controls.Add(clearButton);
             Controls.Add(closeButton);
 
             booksGrid = new DataGridView
-            {
-                Location = new Point(30, 475),
-                Size = new Size(1010, 190),
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect
-            };
+{
+    Location = new Point(30, 475),
+    Size = new Size(1010, 190),
+    ReadOnly = true,
+    AllowUserToAddRows = false,
+    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+    SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+    MultiSelect = false
+};
 
             Controls.Add(booksGrid);
+            booksGrid.CellClick += BooksGrid_CellClick;
         }
 
         private void AddLabel(
